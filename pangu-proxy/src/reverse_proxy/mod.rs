@@ -3,7 +3,7 @@ use hyper::http::header::{InvalidHeaderValue, ToStrError};
 use hyper::http::uri::InvalidUri;
 use hyper::upgrade::OnUpgrade;
 use hyper::{Body, Client, Error, Request, Response, StatusCode};
-use hyperlocal::{UnixClientExt, Uri};
+use hyperlocal::{Uri};
 use lazy_static::lazy_static;
 use std::net::IpAddr;
 use tokio::io::copy_bidirectional;
@@ -219,24 +219,22 @@ fn create_proxied_request<B>(
                 .any(|e| e.trim() == *TRAILERS_HEADER)
         })
         .unwrap_or(false);
-    let path = request.uri().path();
-    println!("forward_url: {:?}", path);
-    // let uri: hyper::Uri = forward_uri(forward_url, &request).parse()?;
-    // println!("uri2222: {:?}", uri.path());
 
-    let luri: Uri = Uri::new(forward_url, path).into();
 
- match client_type {
-     UNIX=>{
-
-     }
-     TCP=> {
-        
-     }
- }
-    let uri: hyper::Uri = hyper::Uri::from(luri);
-
-    // print!("fUrl: {:?}\n", fUrl);
+    let uri: hyper::Uri;
+    match client_type {
+        ClientType::UNIX => {
+            // convert unix socket path to http url
+            let luri: Uri = Uri::new(forward_url, "").into();
+            let str = hyper::Uri::from(luri).to_string();
+            // forward_url
+            uri = forward_uri(&str, &request).parse()?;
+        }
+        ClientType::TCP => {
+            uri = forward_uri(forward_url, &request).parse()?;
+            debug!("uri: {:?}", uri);
+        }
+    }
 
     print!("URI: {:?}\n", uri);
     debug!("Setting headers of proxied request");
@@ -293,8 +291,9 @@ fn create_proxied_request<B>(
 
     Ok(request)
 }
-enum ClientType {
-    Unix,TCP
+pub enum ClientType {
+    UNIX,
+    TCP,
 }
 pub async fn call<'a, T: hyper::client::connect::Connect + Clone + Send + Sync + 'static>(
     client_ip: IpAddr,
@@ -315,12 +314,16 @@ pub async fn call<'a, T: hyper::client::connect::Connect + Clone + Send + Sync +
 
     let proxied_request = create_proxied_request(
         client_ip,
+        client_type,
         forward_uri,
         request,
         request_upgrade_type.as_ref(),
     )?;
-    let mut response = client.request(proxied_request).await?;
 
+    debug!("Sending proxied request");
+    debug!("proxied_request: {:?}", proxied_request);
+    let mut response = client.request(proxied_request).await?;
+    debug!("response: {:?}", response);
     if response.status() == StatusCode::SWITCHING_PROTOCOLS {
         let response_upgrade_type = get_upgrade_type(response.headers());
 
@@ -379,7 +382,7 @@ impl<T: hyper::client::connect::Connect + Clone + Send + Sync + 'static> Reverse
         forward_uri: &str,
         request: Request<Body>,
     ) -> Result<Response<Body>, ProxyError> {
-        call::<T>(client_ip, client_type: ClientType,forward_uri, request, &self.client).await
+        call::<T>(client_ip, client_type, forward_uri, request, &self.client).await
     }
 }
 

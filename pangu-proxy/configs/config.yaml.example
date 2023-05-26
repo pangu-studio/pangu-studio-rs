@@ -1,0 +1,15 @@
+listen: 127.0.0.1:8000
+secret: e3cce906bc179f417e2eb7f23d2294d590ba4bae478f4bea2861ea9a81c080ce
+logging:
+  level: info
+  write_style: auto # auto, always, never
+rules:
+  - prefix: /unix_docker
+    schema: unix
+    target: /var/run/docker.sock
+  - prefix: /http_docker
+    schema: http
+    target: http://localhost:2375
+  - prefix: /https_test
+    schema: https
+    target: https://www.google.com
