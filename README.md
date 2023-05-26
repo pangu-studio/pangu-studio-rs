@@ -1,2 +1,2 @@
 # Pangu Studio
-Manage your docker，kubernets，mysql etc.
+Manage your docker，kubernetes，mysql etc.
