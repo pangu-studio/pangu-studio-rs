@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+    "pangu-studio/src-tauri",
+    "pangu-domain",
+    "pangu-infras",
+    "pangu-proxy",
+]
+[patch.crates-io]
+pangu-studio = { path = "./pangu-studio/src-tauri" }
+pangu-domain = {path = "./pangu-domain"}
+pangu-infras = {path = "./pangu-infras"}
+pangu-proxy = {path = "./pangu-proxy"}
+
+[profile.release]
+strip = true 
+lto = true
+opt-level = "s"
