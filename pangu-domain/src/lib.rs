@@ -1,6 +1,8 @@
 pub mod model;
 pub mod repository;
 pub mod service;
+
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }

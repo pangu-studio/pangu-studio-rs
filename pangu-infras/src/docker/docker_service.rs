@@ -1,5 +1,4 @@
 use bollard::container::{InspectContainerOptions, ListContainersOptions};
-use bollard::models::ContainerSummary;
 use bollard::{ClientVersion, Docker};
 use pangu_domain::service::container_service::ContainerService;
 use std::collections::HashMap;
@@ -8,7 +7,7 @@ use std::default::Default;
 pub struct DockerService {
     // pub docker_client: DockerClient,
 }
-
+use pangu_domain::model::ContainerSummary;
 async fn conc(arg: (Docker, &ContainerSummary)) {
     let (docker, container) = arg;
     println!(

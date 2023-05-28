@@ -1,4 +1,4 @@
-use bollard::models::ContainerSummary;
+use crate::model::ContainerSummary;
 use async_trait::async_trait;
 #[async_trait]
 pub trait ContainerService  {

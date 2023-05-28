@@ -1,2 +1,3 @@
-pub mod container;
-pub mod user;
+pub use bollard::models::*;
+mod user;
+pub use user::*;
