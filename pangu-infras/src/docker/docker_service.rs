@@ -1,10 +1,54 @@
+use bollard::container::{InspectContainerOptions, ListContainersOptions};
+use bollard::models::ContainerSummary;
+use bollard::{ClientVersion, Docker};
 use pangu_domain::service::container_service::ContainerService;
+use std::collections::HashMap;
+use std::default::Default;
 
 pub struct DockerService {
     // pub docker_client: DockerClient,
 }
+
+async fn conc(arg: (Docker, &ContainerSummary)) {
+    let (docker, container) = arg;
+    println!(
+        "{:?}",
+        docker
+            .inspect_container(
+                container.id.as_ref().unwrap(),
+                None::<InspectContainerOptions>
+            )
+            .await
+            .unwrap()
+    )
+}
+use async_trait::async_trait;
+
+#[async_trait]
 impl ContainerService for DockerService {
-    fn list_containers(&self) -> Vec<pangu_domain::model::container::Container> {
-        todo!()
+    async fn list_containers(&self) -> Vec<ContainerSummary> {
+        let docker = Docker::connect_with_http(
+            "http://localhost:8888",
+            120,
+            &ClientVersion {
+                major_version: 1,
+                minor_version: 41,
+            },
+        )
+        .unwrap();
+
+        let v = docker.clone().negotiate_version().await;
+        println!("{:?}", v);
+        let mut list_container_filters = HashMap::new();
+        list_container_filters.insert("status", vec!["running"]);
+
+        let containers = docker
+            .list_containers(Some(ListContainersOptions {
+                all: true,
+                filters: list_container_filters,
+                ..Default::default()
+            }))
+            .await;
+        containers.unwrap()
     }
 }

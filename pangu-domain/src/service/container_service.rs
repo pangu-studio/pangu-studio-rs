@@ -1,4 +1,7 @@
-use crate::model::container::Container;
+use bollard::models::ContainerSummary;
+use async_trait::async_trait;
+#[async_trait]
 pub trait ContainerService  {
-    fn list_containers(&self) -> Vec<Container>;
+    async fn list_containers(&self) -> Vec<ContainerSummary>;
+
 }
