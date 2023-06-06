@@ -27,14 +27,14 @@ use async_trait::async_trait;
 impl ContainerService for DockerService {
     async fn list_containers(&self) -> Vec<ContainerSummary> {
         let docker = Docker::connect_with_http(
-            "http://localhost:8888",
+            "http://localhost:2345",
             120,
             &ClientVersion {
                 major_version: 1,
                 minor_version: 41,
             },
-        )
-        .unwrap();
+            Some("46af768f12bd195ab".to_string()),
+        ).unwrap();
 
         let v = docker.clone().negotiate_version().await;
         println!("{:?}", v);
