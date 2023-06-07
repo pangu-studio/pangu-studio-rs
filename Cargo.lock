@@ -2272,7 +2272,17 @@ dependencies = [
 name = "pangu-application"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "bollard",
+ "chrono",
+ "futures",
+ "log",
  "pangu-domain",
+ "serde",
+ "serde_with 2.3.3",
+ "simplelog",
+ "sqlx",
+ "thiserror",
 ]
 
 [[package]]
@@ -2280,8 +2290,8 @@ name = "pangu-domain"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "bollard",
  "chrono",
+ "derive_more",
  "futures",
  "log",
  "serde",
@@ -2303,6 +2313,7 @@ dependencies = [
  "futures-util",
  "log",
  "once_cell",
+ "pangu-application",
  "pangu-domain",
  "serde",
  "serde_derive",

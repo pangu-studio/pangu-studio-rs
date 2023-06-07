@@ -1,19 +1,19 @@
 // mod store;
 mod repository;
+mod service;
 
-use std::fs;
 use once_cell::sync::OnceCell as SyncCell;
 use pangu_domain::errors::Error;
+use std::fs;
 
 use tokio::sync::OnceCell;
 
-use crate::repository::{app_data_path,init_logger};
 use crate::repository::db_conn_pool;
 use crate::repository::run_migrations;
+use crate::repository::{app_data_path, init_logger,EndpointRepositoryImpl};
 // use crate::store::project::{save_project, delete_project, list_projects, Project};
 
-use test_context::{AsyncTestContext, TestContext, test_context};
-
+use test_context::{test_context, AsyncTestContext, TestContext};
 
 use tokio::runtime::Runtime;
 
@@ -25,6 +25,7 @@ pub fn runtime() -> Result<&'static Runtime, Error> {
 
 pub struct MyAsyncContext {
     // value: String,
+    endpoint_repo: EndpointRepositoryImpl,
 }
 
 pub struct MyContext {
@@ -37,6 +38,7 @@ impl AsyncTestContext for MyAsyncContext {
         initialize().await;
         MyAsyncContext {
             // value: "test".to_string()
+            endpoint_repo: EndpointRepositoryImpl::new(),
         }
     }
 
@@ -52,7 +54,7 @@ impl TestContext for MyContext {
         rt.block_on(initialize());
         // block_on()
         MyContext {
-            value: "test".to_string()
+            value: "test".to_string(),
         }
     }
 
@@ -69,9 +71,7 @@ pub async fn initialize() -> &'static anyhow::Result<()> {
         app_data_path(test_folder.to_string());
         init_logger(0);
 
-        fs::remove_file("./data.db").unwrap_or_else(|why| {
-            error!("! {:?}",why.kind())
-        });
+        fs::remove_file("./data.db").unwrap_or_else(|why| error!("! {:?}", why.kind()));
         match run_migrations().await {
             Ok(_) => {
                 info!("migrations done");
@@ -83,17 +83,20 @@ pub async fn initialize() -> &'static anyhow::Result<()> {
 
         //read sql file
         let sql = match fs::read_to_string("./db/test/data.sql") {
-            Ok(sql) => { sql }
+            Ok(sql) => sql,
             Err(_) => {
                 //找不到测试数据sql文件直接退出
                 panic!("test data sql file not found")
             }
         };
-        debug!("sql file {}",sql);
+        debug!("sql file {}", sql);
         //insert test data
-        sqlx::query(sql.as_str()).execute(db_conn_pool().await?).await?;
+        sqlx::query(sql.as_str())
+            .execute(db_conn_pool().await?)
+            .await?;
         Ok(())
-    }).await
+    })
+    .await
 }
 
 #[test_context(MyContext)]

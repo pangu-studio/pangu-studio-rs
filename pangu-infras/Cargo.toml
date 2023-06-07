@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 pangu-domain = { path = "../pangu-domain" }
+pangu-application = { path = "../pangu-application" }
 bollard = {git = "https://github.com/pangu-studio/bollard.git",branch = "master"}
 sqlx = { version = "0.7.0-alpha.3", features = [ "sqlite", "chrono","runtime-tokio" ] }
 async-trait = "*"
