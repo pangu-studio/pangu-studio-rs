@@ -1,11 +1,5 @@
-#[macro_use]
-extern crate log;
-extern crate simplelog;
-
-pub mod model;
-pub mod repository;
-pub mod service;
-pub mod errors;
+pub mod container;
+pub mod system;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

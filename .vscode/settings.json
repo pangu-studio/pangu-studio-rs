@@ -1,6 +1,8 @@
 {
     "nuxt.isNuxtApp": false,
     "rust-analyzer.linkedProjects": [
+        "./pangu-infras/Cargo.toml",
+        "./pangu-infras/Cargo.toml",
         "./pangu-infras/Cargo.toml"
     ]
 }

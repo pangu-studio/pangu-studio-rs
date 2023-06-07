@@ -11,6 +11,8 @@ bollard = {git = "https://github.com/pangu-studio/bollard.git",branch = "master"
 sqlx = { version = "0.7.0-alpha.3", features = [ "sqlite", "chrono","runtime-tokio" ] }
 async-trait = "*"
 anyhow = "1.0"
+serde = { version = "1", features = ["derive"] }
+serde_derive = "1.0"
 futures = {version = "0.3"}
 futures-util = "0.3"
 tokio = { version = "1.20.0", features = ["rt-multi-thread", "parking_lot","macros"]}

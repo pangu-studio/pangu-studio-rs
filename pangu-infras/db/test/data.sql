@@ -1,0 +1,2 @@
+INSERT INTO endpoints (id, name, host, port,secret, endpoint_type, host_type, description, create_time, deleted)
+VALUES('1', 'endpoint1', 'localhost', 2345, 'abdefefe', 'server','http',"hosts", datetime('now','localtime'),0);

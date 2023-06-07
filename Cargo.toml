@@ -5,14 +5,15 @@ members = [
     "pangu-domain",
     "pangu-infras",
     "pangu-proxy",
+    "pangu-application",
 ]
 [patch.crates-io]
 pangu-studio = { path = "./pangu-studio/src-tauri" }
-pangu-domain = {path = "./pangu-domain"}
-pangu-infras = {path = "./pangu-infras"}
-pangu-proxy = {path = "./pangu-proxy"}
-
+pangu-domain = { path = "./pangu-domain" }
+pangu-infras = { path = "./pangu-infras" }
+pangu-proxy = { path = "./pangu-proxy" }
+pangu-application = { path = "./pangu-application" }
 [profile.release]
-strip = true 
+strip = true
 lto = true
 opt-level = "s"
