@@ -2,7 +2,9 @@ use crate::errors::Error;
 use crate::model::Model;
 use async_trait::async_trait;
 mod endpoint;
+mod sslcert;
 pub use endpoint::*;
+pub use sslcert::*;
 //Model trait define
 #[async_trait]
 pub trait Repository<M: Model, ID> {

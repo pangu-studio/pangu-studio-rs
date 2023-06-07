@@ -18,7 +18,7 @@ async fn list_endpoints(ctx: &mut MyAsyncContext) {
 #[test_context(MyAsyncContext)]
 #[tokio::test]
 async fn create_endpoint(ctx: &mut MyAsyncContext) {
-    let mut  endpoint = Endpoint::new(
+    let endpoint = Endpoint::new(
         "test",
         "localhost",
         2354,

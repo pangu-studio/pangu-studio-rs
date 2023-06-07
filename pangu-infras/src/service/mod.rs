@@ -1,2 +1,3 @@
-pub mod sslcert_dnspod;
+pub mod sslcert;
 pub mod docker;
+pub use sslcert::*;

@@ -10,7 +10,8 @@ use tokio::sync::OnceCell;
 
 use crate::repository::db_conn_pool;
 use crate::repository::run_migrations;
-use crate::repository::{app_data_path, init_logger,EndpointRepositoryImpl};
+use crate::repository::DnsProviderRepositoryImpl;
+use crate::repository::{app_data_path, init_logger, EndpointRepositoryImpl};
 // use crate::store::project::{save_project, delete_project, list_projects, Project};
 
 use test_context::{test_context, AsyncTestContext, TestContext};
@@ -26,6 +27,7 @@ pub fn runtime() -> Result<&'static Runtime, Error> {
 pub struct MyAsyncContext {
     // value: String,
     endpoint_repo: EndpointRepositoryImpl,
+    dns_provider_repo: DnsProviderRepositoryImpl,
 }
 
 pub struct MyContext {
@@ -39,6 +41,7 @@ impl AsyncTestContext for MyAsyncContext {
         MyAsyncContext {
             // value: "test".to_string()
             endpoint_repo: EndpointRepositoryImpl::new(),
+            dns_provider_repo: DnsProviderRepositoryImpl::new(),
         }
     }
 
