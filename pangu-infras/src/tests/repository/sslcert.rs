@@ -59,8 +59,8 @@ async fn get_cert() -> anyhow::Result<()> {
     init_logger(0);
     let dns_provider = DnsProvider::new(
         "dnspod",
-        "234603",
-        "c57b54a3010a7341e81fed089fbdbd31",
+        "323",
+        "121231231111",
         DnsProviderType::Dnspod,
     );
 
@@ -69,9 +69,9 @@ async fn get_cert() -> anyhow::Result<()> {
     let ssl_app_svc = SSLCertApplicationServiceImpl::new(dnspod_svc);
 
     let sslcert_req = SSLCertRequest {
-        domain: "pangu.studio".to_string(),
+        domain: "test.studio".to_string(),
         subdomain: "www".to_string(),
-        email: "drmfly.liw@gmail.com".to_string(),
+        email: "a.b@gmail.com".to_string(),
         dns_provider: "dnspod".to_string(),
     };
 
