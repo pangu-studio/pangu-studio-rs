@@ -16,7 +16,7 @@ impl EndpointRepositoryImpl {
 #[async_trait]
 impl Repository<Endpoint, i64> for EndpointRepositoryImpl {
     //save model to db
-    async fn save(&mut self, mut endpoint: Endpoint) -> Result<i64, Error> {
+    async fn create(&self, mut endpoint: Endpoint) -> Result<i64, Error> {
         let pool = db_conn_pool().await?;
         let sql = format!("insert into {} (name,host,port,secret,host_type,endpoint_type,create_time) values (?1,?2,?3,?4,?5,?6,?7)",Endpoint::table_name());
         debug!("sql:{}\nendpoint:{}", sql, endpoint);
@@ -47,7 +47,7 @@ impl Repository<Endpoint, i64> for EndpointRepositoryImpl {
         return Ok(());
     }
     //find model by id from db
-    async fn find(_id: i64) -> Result<Endpoint, Error> {
+    async fn find(&self, _id: i64) -> Result<Endpoint, Error> {
         todo!("not implement");
         //     return Ok(Endpoint{
         //         host: "".to_string(),
@@ -58,7 +58,7 @@ impl Repository<Endpoint, i64> for EndpointRepositoryImpl {
         //     });
     }
     //remove model
-    async fn remove(&mut self, id: i64) -> Result<(), Error> {
+    async fn remove(&self, id: i64) -> Result<(), Error> {
         todo!("not implement");
         return Ok(());
     }

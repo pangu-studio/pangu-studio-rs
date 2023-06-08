@@ -19,8 +19,12 @@ pub enum Error {
     InvalidParams(String),
     #[error("serialize error: {0}")]
     Serialize(String),
-    #[error("docker client error: {0}")]
+    #[error("acme error: {0}")]
+    Acme(String),
+    #[error("docker error: {0}")]
     Docker(String),
+    #[error("dnspod error: {0}")]
+    Dnspod(String),
     #[error("tokio runtime error: {0}")]
     Runtime(String)
 }

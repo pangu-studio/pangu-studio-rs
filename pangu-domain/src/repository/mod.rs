@@ -8,18 +8,18 @@ pub use sslcert::*;
 //Model trait define
 #[async_trait]
 pub trait Repository<M: Model, ID> {
-    //save model to db
-    async fn save(&mut self, model: M) -> Result<ID, Error>;
+    //create model to db
+    async fn create(&self, model: M) -> Result<ID, Error>;
     //update model to db
     async fn update(&self, model: M) -> Result<(), Error>;
     //find model by id from db
-    async fn find(id: ID) -> Result<M, Error>;
+    async fn find(&self, id: ID) -> Result<M, Error>;
     //remove model
-    async fn remove(&mut self, id: ID) -> Result<(), Error>;
+    async fn remove(&self, id: ID) -> Result<(), Error>;
 }
 
 #[async_trait]
 pub trait Delete<ID> {
     //delete model
-    async fn delete(id: ID) -> Result<(), Error>;
+    async fn delete(&self, id: ID) -> Result<(), Error>;
 }

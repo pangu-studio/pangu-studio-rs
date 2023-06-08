@@ -1,4 +1,4 @@
-use crate::{model::Model, service};
+use crate::{model::Model};
 use chrono::{DateTime, Utc};
 use derive_more::Display;
 use serde::{Deserialize, Serialize};

@@ -26,6 +26,6 @@ async fn create_endpoint(ctx: &mut MyAsyncContext) {
         EndpointHostType::HTTP,
         EndpointType::Server,
     );
-    let id = ctx.endpoint_repo.save(endpoint).await.unwrap();
+    let id = ctx.endpoint_repo.create(endpoint).await.unwrap();
     println!("endpoint id: {:?}", id);
 }
