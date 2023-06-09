@@ -64,7 +64,7 @@ onMounted(() => {
           <icon-ion-file-tray-full-sharp class="menu-icon" />
           <template #title>文件</template>
         </el-menu-item>
-        <el-menu-item index="/sslcert">
+        <el-menu-item index="/sslcert/certificates">
           <icon-mdi-certificate class="menu-icon" />
           <template #title>证书</template>
         </el-menu-item>
