@@ -10,4 +10,5 @@ pub trait DnsProviderRepository: Repository<DnsProvider, i64> {
 #[async_trait]
 pub trait SSLCertificateRepository: Repository<SSLCertificate, i64> {
     async fn find_by_domain(&self, domains: &str) -> Result<Vec<SSLCertificate>, Error>;
+    async fn find_all(&self) -> Result<Vec<SSLCertificate>, Error>;
 }

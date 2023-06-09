@@ -3,7 +3,7 @@ use pangu_domain::errors::Error;
 use pangu_domain::repository::Delete;
 use pangu_domain::{
     model::{DnsProvider, Model, SSLCertificate},
-    repository::{DnsProviderRepository, Repository},
+    repository::{DnsProviderRepository, Repository, SSLCertificateRepository},
 };
 use sqlx::{Pool, Sqlite};
 /// ==================================================================
@@ -129,11 +129,18 @@ impl DnsProviderRepository for DnsProviderRepositoryImpl {
 /// ======================================================================
 /// =====================SSLCertificateRepositoryImpl=====================
 /// ======================================================================
-pub struct SSLCertApplicationServiceImpl {
+#[derive(Debug, Clone)]
+pub struct SSLCertificateRepositoryImpl {
     db_pool: &'static Pool<Sqlite>,
 }
+
+impl SSLCertificateRepositoryImpl {
+    pub fn new(db_pool: &'static Pool<Sqlite>) -> Self {
+        Self { db_pool }
+    }
+}
 #[async_trait]
-impl Repository<SSLCertificate, i64> for SSLCertApplicationServiceImpl {
+impl Repository<SSLCertificate, i64> for SSLCertificateRepositoryImpl {
     async fn create(&self, cert: SSLCertificate) -> Result<i64, Error> {
         let sql = format!(
             r#"
@@ -155,7 +162,24 @@ impl Repository<SSLCertificate, i64> for SSLCertApplicationServiceImpl {
         Ok(id)
     }
     async fn update(&self, _cert: SSLCertificate) -> Result<(), Error> {
-        unimplemented!()
+        let sql = format!(
+            r#"
+            UPDATE {} SET domains = ?1, cert_chain = ?2, private_key = ?3, status = ?4, deleted = ?5, update_time = ?6 WHERE id = ?7;
+            "#,
+            SSLCertificate::table_name()
+        );
+        sqlx::query(&sql)
+            .bind(_cert.domains)
+            .bind(_cert.cert_chain)
+            .bind(_cert.private_key)
+            .bind(_cert.status)
+            .bind(_cert.deleted)
+            .bind(_cert.update_time)
+            .bind(_cert.id)
+            .execute(self.db_pool)
+            .await
+            .or_else(|err| Err(Error::Database(err)))?;
+        Ok(())
     }
     async fn find(&self, id: i64) -> Result<SSLCertificate, Error> {
         let sql = format!(
@@ -188,7 +212,38 @@ impl Repository<SSLCertificate, i64> for SSLCertApplicationServiceImpl {
     }
 }
 #[async_trait]
-impl Delete<i64> for SSLCertApplicationServiceImpl {
+impl SSLCertificateRepository for SSLCertificateRepositoryImpl {
+    async fn find_by_domain(&self, domains: &str) -> Result<Vec<SSLCertificate>, Error> {
+        let sql = format!(
+            r#"
+            SELECT * FROM {} WHERE domains LIKE ?1;
+            "#,
+            SSLCertificate::table_name()
+        );
+        let list = sqlx::query_as::<Sqlite, SSLCertificate>(&sql)
+            .bind(format!("%{}%", domains))
+            .fetch_all(self.db_pool)
+            .await
+            .or_else(|err| Err(Error::Database(err)))?;
+        Ok(list)
+    }
+    async fn find_all(&self) -> Result<Vec<SSLCertificate>, Error> {
+        let sql = format!(
+            r#"
+            SELECT * FROM {} WHERE deleted = ?1;
+            "#,
+            SSLCertificate::table_name()
+        );
+        let list = sqlx::query_as::<Sqlite, SSLCertificate>(&sql)
+            .bind(false)
+            .fetch_all(self.db_pool)
+            .await
+            .or_else(|err| Err(Error::Database(err)))?;
+        Ok(list)
+    }
+}
+#[async_trait]
+impl Delete<i64> for SSLCertificateRepositoryImpl {
     async fn delete(&self, id: i64) -> Result<(), Error> {
         let sql = format!(
             r#"

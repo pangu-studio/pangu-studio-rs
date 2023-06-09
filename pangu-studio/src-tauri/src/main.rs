@@ -6,7 +6,7 @@ mod command;
 use futures::executor::block_on;
 use pangu_application::sslcert::SSLCertApplicationService;
 use pangu_infras::repository::{
-    app_data_path, db_conn_pool, init_logger, run_migrations, DnsProviderRepositoryImpl,
+    app_data_path, db_conn_pool, init_logger, run_migrations, DnsProviderRepositoryImpl,SSLCertificateRepositoryImpl,
 };
 use pangu_infras::service::sslcert::SSLCertApplicationServiceImpl;
 use pangu_infras::service::DnspodServiceImpl;
@@ -52,6 +52,7 @@ fn main() {
 
     //===================== repository ======================
     let dns_provider_repo = DnsProviderRepositoryImpl::new(db_pool);
+    let sslcert_repo = Box::new(SSLCertificateRepositoryImpl::new(db_pool));
 
     //================= domain service ======================
 
@@ -62,6 +63,7 @@ fn main() {
         sslcert_app_svc: Box::new(SSLCertApplicationServiceImpl::new(
             Box::new(dns_provider_service),
             Box::new(dns_provider_repo),
+            sslcert_repo,
         )),
     };
 
@@ -70,6 +72,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             greet,
             command::sslcert::list_dns_providers,
+            command::sslcert::list_sslcerts,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

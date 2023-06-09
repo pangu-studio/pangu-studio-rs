@@ -22,7 +22,14 @@
                 </div>
             </el-aside>
             <el-container>
-                <el-header class="header">证书管理</el-header>
+                <el-header class="header">
+
+                    <el-breadcrumb :separator-icon="ArrowRight">
+                        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+                        <el-breadcrumb-item>证书管理</el-breadcrumb-item>
+                        <el-breadcrumb-item>{{ route.meta.title }}</el-breadcrumb-item>
+                    </el-breadcrumb>
+                </el-header>
                 <el-main class="content"> <router-view /></el-main>
                 <!-- <el-footer>Footer</el-footer> -->
             </el-container>
@@ -32,6 +39,11 @@
 <script lang="ts" setup>
 import { onMounted, ref, computed } from "vue";
 import { useSslCertStore } from "@/stores/sslcert";
+import { ArrowRight } from '@element-plus/icons-vue'
+import {useRoute } from 'vue-router';
+
+const route= useRoute();
+
 let activeClass = "sub-menu--collapse";
 
 const store = useSslCertStore();

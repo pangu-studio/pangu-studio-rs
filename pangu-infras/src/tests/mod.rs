@@ -3,9 +3,10 @@ mod repository;
 mod service;
 
 use once_cell::sync::OnceCell as SyncCell;
+use pangu_application::sslcert::SSLCertApplicationService;
 use pangu_domain::errors::Error;
 use pangu_domain::service::sslcert::DnsProviderService;
-use pangu_application::sslcert::SSLCertApplicationService;
+use pangu_domain::repository::{SSLCertificateRepository};
 use std::fs;
 
 use tokio::sync::OnceCell;
@@ -13,6 +14,7 @@ use tokio::sync::OnceCell;
 use crate::repository::db_conn_pool;
 use crate::repository::run_migrations;
 use crate::repository::DnsProviderRepositoryImpl;
+use crate::repository::SSLCertificateRepositoryImpl;
 use crate::repository::{app_data_path, init_logger, EndpointRepositoryImpl};
 use crate::service::DnspodServiceImpl;
 use crate::service::SSLCertApplicationServiceImpl;
@@ -34,10 +36,14 @@ struct Services {
 struct AppServices {
     sslcert_app_svc: Box<dyn SSLCertApplicationService + Send + Sync>,
 }
-pub struct MyAsyncContext {
-    // value: String,
+struct Repositories {
     endpoint_repo: EndpointRepositoryImpl,
     dns_provider_repo: DnsProviderRepositoryImpl,
+    ssl_cert_repo: Box<dyn SSLCertificateRepository + Send + Sync>,
+}
+pub struct MyAsyncContext {
+    // value: String,
+    repositories: Repositories,
     services: Services,
     app_services: AppServices,
 }
@@ -50,20 +56,29 @@ pub struct MyContext {
 impl AsyncTestContext for MyAsyncContext {
     async fn setup() -> MyAsyncContext {
         initialize().await;
-        let dns_provider_repo = DnsProviderRepositoryImpl::new(db_conn_pool().await.unwrap());
+        let db_pool = db_conn_pool().await.unwrap();
+        let dns_provider_repo = DnsProviderRepositoryImpl::new(db_pool);
         let dnspod_svc = DnspodServiceImpl::new(Box::new(dns_provider_repo.clone()));
+        let ssl_cert_repo = SSLCertificateRepositoryImpl::new(db_pool);
 
         MyAsyncContext {
             // value: "test".to_string()
-            endpoint_repo: EndpointRepositoryImpl::new(),
-            dns_provider_repo: dns_provider_repo.clone(),
+            repositories: Repositories {
+                endpoint_repo: EndpointRepositoryImpl::new(db_pool),
+                dns_provider_repo: dns_provider_repo.clone(),
+                ssl_cert_repo: Box::new(ssl_cert_repo.clone()),
+            },
             services: Services {
-                dns_provider_svc: Box::new(DnspodServiceImpl::new(Box::new(dns_provider_repo.clone()))),
+                dns_provider_svc: Box::new(DnspodServiceImpl::new(Box::new(
+                    dns_provider_repo.clone(),
+                ))),
             },
             app_services: AppServices {
                 sslcert_app_svc: Box::new(SSLCertApplicationServiceImpl::new(
-                    Box::new(dnspod_svc)),
-                ),
+                    Box::new(dnspod_svc),
+                    Box::new(dns_provider_repo.clone()),
+                    Box::new(ssl_cert_repo.clone()),
+                )),
             },
         }
     }

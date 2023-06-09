@@ -30,7 +30,7 @@ const routes = [
         path: 'dnsprovider',
         name: 'DnsProvider',
         component: DnsProvider,
-        meta: { title: 'DNS 证书提供商' },
+        meta: { title: 'DNS 服务商' },
       },
       {
         path: 'certificates',

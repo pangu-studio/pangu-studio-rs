@@ -51,14 +51,23 @@ impl Model for DnsProvider {
     }
 }
 
+#[derive(sqlx::Type)]
+#[sqlx(rename_all = "lowercase")]
+#[derive(Debug, Clone, Serialize, Deserialize, Display)]
+pub enum SSLCertStatus {
+    Pending,
+    Success,
+    Invalid,
+}
 // ssl_cert
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, Display)]
 #[display(
-    fmt = "Endpoint: [id={}, domains={}, cert_chain={}, private_key={},deleted={:?}], create_time={:?}, update_time={:?}",
+    fmt = "Endpoint: [id={}, domains={}, cert_chain={}, private_key={}, status = {},deleted={:?}], create_time={:?}, update_time={:?}",
     id,
     domains,
     cert_chain,
     private_key,
+    status,
     deleted,
     create_time,
     update_time
@@ -68,6 +77,7 @@ pub struct SSLCertificate {
     pub domains: String,
     pub cert_chain: String,
     pub private_key: String,
+    pub status: SSLCertStatus,
     pub deleted: Option<bool>,
     pub create_time: Option<DateTime<Utc>>,
     pub update_time: Option<DateTime<Utc>>,
@@ -79,6 +89,7 @@ impl SSLCertificate {
             domains: domains.to_string(),
             cert_chain: cert_chain.to_string(),
             private_key: private_key.to_string(),
+            status: SSLCertStatus::Pending,
             create_time: Some(Utc::now()),
             update_time: None,
             deleted: Some(false),

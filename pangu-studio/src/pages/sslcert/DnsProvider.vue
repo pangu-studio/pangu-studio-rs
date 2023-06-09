@@ -1,7 +1,7 @@
 <template>
     <el-row>
         <el-col v-for="provider in store.list" :key="provider.id" :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
-            <el-card :body-style="{ padding: '0px' }">
+            <el-card class="provider-card" :body-style="{ padding: '0px' }">
                 <img :src="DnspodLogo" class="image" />
                 <div style="padding: 14px;padding-top: 0;">
                     <span style="font-weight: 500;">{{ provider.name }}</span>
@@ -52,6 +52,9 @@ onMounted(() => {
 });
 </script>
 <style lang="scss" scoped>
+.provider-card {
+    font-size: 0.9em;
+}
 .time {
     font-size: 14px;
     color: #999;

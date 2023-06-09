@@ -3,10 +3,11 @@ use simplelog::info;
 
 use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest};
 use pangu_domain::errors::Error;
-use pangu_domain::model::DnsProvider;
-use pangu_domain::repository::DnsProviderRepository;
+use pangu_domain::model::{DnsProvider, SSLCertStatus, SSLCertificate};
+use pangu_domain::repository::{DnsProviderRepository, SSLCertificateRepository};
 use pangu_domain::service::sslcert::{DnsProviderService, ResponseData};
 use rcgen::{Certificate, CertificateParams, DistinguishedName};
+
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -16,7 +17,7 @@ use instant_acme::{
 };
 
 pub struct DnspodServiceImpl {
-    dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync>,
+    dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync + 'static>,
 }
 
 #[async_trait]
@@ -88,7 +89,7 @@ impl DnsProviderService for DnspodServiceImpl {
     }
 }
 impl DnspodServiceImpl {
-    pub fn new(dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync>) -> Self {
+    pub fn new(dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync + 'static>) -> Self {
         Self { dns_provider_repo }
     }
 }
@@ -99,15 +100,21 @@ impl DnspodServiceImpl {
 pub struct SSLCertApplicationServiceImpl {
     dns_provider_svc: Box<dyn DnsProviderService + Send + Sync>,
     dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync>,
+    sslcert_repo: Box<dyn SSLCertificateRepository + Send + Sync>,
 }
 
 impl SSLCertApplicationServiceImpl {
     pub fn new(
         dns_provider_svc: Box<dyn DnsProviderService + Send + Sync>,
         dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync>,
+        sslcert_repo: Box<dyn SSLCertificateRepository + Send + Sync>,
         // dns_provider_repo: DnsProviderRepositoryImpl,
     ) -> Self {
-        Self { dns_provider_svc, dns_provider_repo}
+        Self {
+            dns_provider_svc,
+            dns_provider_repo,
+            sslcert_repo,
+        }
     }
 }
 
@@ -195,7 +202,13 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
 
         // Exponentially back off until the order becomes ready or invalid.
         let mut tries = 1u8;
-        let mut delay = Duration::from_secs(50);
+        let mut delay = Duration::from_secs(20);
+        let model = SSLCertificate::new(
+            (format!("{}.{}", &cert.subdomain, &cert.domain)).as_str(),
+            "",
+            "",
+        );
+        let cert_id = self.sslcert_repo.create(model.clone()).await?;
         loop {
             debug!(
                 "waiting for order to become ready. {}s",
@@ -275,6 +288,23 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
             }
         };
 
+        // save to db
+
+        // let model = SSLCertificate::new(
+        //     (format!("{}.{}", &cert.subdomain, &cert.domain)).as_str(),
+        //     &cert_chain_pem,
+        //     &ssl_cert.serialize_private_key_pem(),
+        // );
+        //find
+        let mut cert_db = self.sslcert_repo.find(cert_id).await?;
+        cert_db.id = cert_id;
+        cert_db.private_key = ssl_cert.serialize_private_key_pem();
+        cert_db.cert_chain = cert_chain_pem.clone();
+        cert_db.status = SSLCertStatus::Success;
+        cert_db.update_time = Some(chrono::Utc::now());
+        self.sslcert_repo.update(cert_db).await?;
+        // self.sslcert_repo.create(model).await?;
+
         info!("certficate chain:\n\n{}", cert_chain_pem);
         info!("private key:\n\n{}", ssl_cert.serialize_private_key_pem());
         info!(
@@ -293,5 +323,14 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
             .or_else(|err| Err(Error::Acme(err.to_string())))?;
 
         Ok(providers)
+    }
+    async fn list_sslcerts(&self) -> Result<Vec<SSLCertificate>, Error> {
+        let certs = self
+            .sslcert_repo
+            .find_all()
+            .await
+            .or_else(|err| Err(Error::Acme(err.to_string())))?;
+
+        Ok(certs)
     }
 }

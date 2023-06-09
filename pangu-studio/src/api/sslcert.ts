@@ -10,6 +10,10 @@ export interface DnsProvider {
   update_time: string
 }
 
+export interface SSLCertificate{
+  
+}
+
 export async function listDnsProvider(): Promise<DnsProvider[]> {
   return invoke('list_dns_providers')
 }
