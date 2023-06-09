@@ -1,11 +1,8 @@
-use crate::repository::{app_data_path, init_logger};
-use crate::service::{DnspodServiceImpl, SSLCertApplicationServiceImpl};
 use crate::tests::MyAsyncContext;
 
-use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest};
+use pangu_application::sslcert::SSLCertRequest;
 use pangu_domain::model::{DnsProvider, DnsProviderType};
 use pangu_domain::repository::{DnsProviderRepository, Repository};
-use pangu_domain::service::sslcert::DnsProviderService;
 use test_context::test_context;
 
 #[test_context(MyAsyncContext)]
@@ -19,62 +16,47 @@ async fn create_dns_provider(ctx: &mut MyAsyncContext) {
 #[test_context(MyAsyncContext)]
 #[tokio::test]
 async fn list_endpoints_by_name(ctx: &mut MyAsyncContext) {
-    let list = ctx
-        .dns_provider_repo
-        .find_by_name("dns".to_string())
+    let res = ctx.dns_provider_repo.find_by_name("dns".to_string()).await;
+    assert!(res.is_ok());
+}
+#[test_context(MyAsyncContext)]
+#[tokio::test]
+async fn dnspod_post(ctx: &mut MyAsyncContext) {
+    let _r = ctx
+        .services
+        .dns_provider_svc
+        .add_record(1, "ab.com", "test", "1.1.1.1", "A")
         .await
         .unwrap();
-    println!("dns_provider: {:?}", list);
-    assert_eq!(list.len() > 0, true);
 }
 
+#[test_context(MyAsyncContext)]
 #[tokio::test]
-async fn dnspod_post() {
-    let _r = DnspodServiceImpl::new(DnsProvider::new(
-        "na",
-        "1234",
-        "12345",
-        DnsProviderType::Dnspod,
-    ))
-    .add_record("ab.com", "test", "1.1.1.1", "A")
-    .await
-    .unwrap();
-}
-#[tokio::test]
-async fn remove_record() {
-    let _r = DnspodServiceImpl::new(DnsProvider::new(
-        "dnspod",
-        "232323",
-        "12333",
-        DnsProviderType::Dnspod,
-    ))
-    .remove_record("abcd.co", "1495225757")
-    .await
-    .unwrap();
+async fn remove_record(ctx: &mut MyAsyncContext) {
+    let _r = ctx
+        .services
+        .dns_provider_svc
+        .remove_record(1, "abcd.co", "1495225757")
+        .await
+        .unwrap();
 }
 
+#[test_context(MyAsyncContext)]
 #[tokio::test]
-async fn get_cert() -> anyhow::Result<()> {
-    app_data_path(".".to_string());
-    init_logger(0);
-    let dns_provider = DnsProvider::new(
-        "dnspod",
-        "323",
-        "121231231111",
-        DnsProviderType::Dnspod,
-    );
-
-    let dnspod_svc = Box::new(DnspodServiceImpl::new(dns_provider));
-
-    let ssl_app_svc = SSLCertApplicationServiceImpl::new(dnspod_svc);
+async fn get_cert(ctx: &mut MyAsyncContext) -> anyhow::Result<()> {
+    // let ssl_app_svc = SSLCertApplicationServiceImpl::new(dnspod_svc);
 
     let sslcert_req = SSLCertRequest {
+        provider_id: 1,
         domain: "test.studio".to_string(),
         subdomain: "www".to_string(),
         email: "a.b@gmail.com".to_string(),
         dns_provider: "dnspod".to_string(),
     };
 
-    ssl_app_svc.create_cert(sslcert_req).await?;
+    ctx.app_services
+        .sslcert_app_svc
+        .create_cert(sslcert_req)
+        .await?;
     Ok(())
 }

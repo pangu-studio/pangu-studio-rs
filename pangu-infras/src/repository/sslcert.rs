@@ -1,26 +1,22 @@
-use crate::repository::db_conn_pool;
 use async_trait::async_trait;
-use futures::executor::block_on;
 use pangu_domain::errors::Error;
-use pangu_domain::model::SSLCertificate;
 use pangu_domain::repository::Delete;
 use pangu_domain::{
-    model::{DnsProvider, Model},
+    model::{DnsProvider, Model, SSLCertificate},
     repository::{DnsProviderRepository, Repository},
 };
 use sqlx::{Pool, Sqlite};
 /// ==================================================================
 /// ====================DnsProviderRepositoryImpl=====================
 /// ==================================================================
+#[derive(Debug, Clone)]
 pub struct DnsProviderRepositoryImpl {
     db_pool: &'static Pool<Sqlite>,
 }
 
 impl DnsProviderRepositoryImpl {
-    pub fn new() -> Self {
-        Self {
-            db_pool: block_on(async { db_conn_pool().await.unwrap() }),
-        }
+    pub fn new(db_pool: &'static Pool<Sqlite>) -> Self {
+        Self { db_pool }
     }
 }
 
@@ -109,6 +105,21 @@ impl DnsProviderRepository for DnsProviderRepositoryImpl {
         // .bind(format!("%{}%","dn"))
         let list = sqlx::query_as::<Sqlite, DnsProvider>(&sql)
             .bind(format!("%{}%", name))
+            .fetch_all(self.db_pool)
+            .await
+            .or_else(|err| Err(Error::Database(err)))?;
+        Ok(list)
+    }
+
+    async fn list_dns_providers(&self) -> Result<Vec<DnsProvider>, Error> {
+        let sql = format!(
+            r#"
+            SELECT * FROM {} WHERE deleted = ?1;
+            "#,
+            DnsProvider::table_name()
+        );
+        let list = sqlx::query_as::<Sqlite, DnsProvider>(&sql)
+            .bind(false)
             .fetch_all(self.db_pool)
             .await
             .or_else(|err| Err(Error::Database(err)))?;

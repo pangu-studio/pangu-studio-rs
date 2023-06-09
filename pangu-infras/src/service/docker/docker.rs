@@ -1,7 +1,7 @@
 use async_trait::async_trait;
-use bollard::container::{InspectContainerOptions, ListContainersOptions};
-use bollard::models::ContainerSummary;
-use bollard::Docker;
+use pangu_bollard::container::{InspectContainerOptions, ListContainersOptions};
+use pangu_bollard::models::ContainerSummary;
+use pangu_bollard::Docker;
 use pangu_application::container::ContainerService;
 use pangu_application::container::ListContainerRequest;
 use pangu_domain::errors::Error;

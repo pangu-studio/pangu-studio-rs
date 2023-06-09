@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bollard::models::ContainerSummary;
+use pangu_bollard::models::ContainerSummary;
 use async_trait::async_trait;
 use pangu_domain::errors::Error;
 use serde::{Serialize, Deserialize};

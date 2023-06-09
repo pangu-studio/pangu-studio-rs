@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 pangu-domain = { path = "../pangu-domain" }
-bollard = {git = "https://github.com/pangu-studio/bollard.git",branch = "master"}
+pangu-bollard = "0.14.0"
 async-trait = "*"
 futures = "0.3"
 serde = { version = "1.0", features = ["derive"] }

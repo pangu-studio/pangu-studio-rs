@@ -4,6 +4,7 @@ use simplelog::info;
 use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest};
 use pangu_domain::errors::Error;
 use pangu_domain::model::DnsProvider;
+use pangu_domain::repository::DnsProviderRepository;
 use pangu_domain::service::sslcert::{DnsProviderService, ResponseData};
 use rcgen::{Certificate, CertificateParams, DistinguishedName};
 use std::time::Duration;
@@ -13,26 +14,28 @@ use instant_acme::{
     Account, AuthorizationStatus, ChallengeType, Identifier, LetsEncrypt, NewAccount, NewOrder,
     OrderStatus,
 };
+
 pub struct DnspodServiceImpl {
-    dns_provider: DnsProvider,
+    dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync>,
 }
 
 #[async_trait]
 impl DnsProviderService for DnspodServiceImpl {
     async fn add_record(
         &self,
+        provider_id: i64,
         domain: &str,
         subdomain: &str,
         value: &str,
         record_type: &str,
     ) -> Result<ResponseData, Error> {
+        let provider = self.dns_provider_repo.find(provider_id).await?;
         let json: ResponseData = reqwest::Client::new()
             .post("https://dnsapi.cn/Record.Create")
             .form(&[
                 (
                     "login_token",
-                    (self.dns_provider.api_key.clone() + "," + &self.dns_provider.api_secret)
-                        .as_str(),
+                    (provider.api_key.clone() + "," + provider.api_secret.as_str()).as_str(),
                 ),
                 ("format", "json"),
                 ("domain", domain),
@@ -56,14 +59,19 @@ impl DnsProviderService for DnspodServiceImpl {
         // println!("a");
     }
 
-    async fn remove_record(&self, domain: &str, record_id: &str) -> Result<(), Error> {
+    async fn remove_record(
+        &self,
+        provider_id: i64,
+        domain: &str,
+        record_id: &str,
+    ) -> Result<(), Error> {
+        let provider = self.dns_provider_repo.find(provider_id).await?;
         let json: ResponseData = reqwest::Client::new()
             .post("https://dnsapi.cn/Record.Remove")
             .form(&[
                 (
                     "login_token",
-                    (self.dns_provider.api_key.clone() + "," + &self.dns_provider.api_secret)
-                        .as_str(),
+                    (provider.api_key.clone() + "," + provider.api_secret.as_str()).as_str(),
                 ),
                 ("domain", domain),
                 ("record_id", record_id),
@@ -80,8 +88,8 @@ impl DnsProviderService for DnspodServiceImpl {
     }
 }
 impl DnspodServiceImpl {
-    pub fn new(dns_provider: DnsProvider) -> Self {
-        Self { dns_provider }
+    pub fn new(dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync>) -> Self {
+        Self { dns_provider_repo }
     }
 }
 
@@ -89,18 +97,17 @@ impl DnspodServiceImpl {
 
 // SSLCertApplicationServiceImpl
 pub struct SSLCertApplicationServiceImpl {
-    dns_provider_service: Box<dyn DnsProviderService + Send + Sync>,
-    // dns_provider_repo: DnsProviderRepositoryImpl,
+    dns_provider_svc: Box<dyn DnsProviderService + Send + Sync>,
+    dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync>,
 }
 
 impl SSLCertApplicationServiceImpl {
     pub fn new(
-        dns_provider_service: Box<dyn DnsProviderService + Send + Sync>,
+        dns_provider_svc: Box<dyn DnsProviderService + Send + Sync>,
+        dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync>,
         // dns_provider_repo: DnsProviderRepositoryImpl,
     ) -> Self {
-        Self {
-            dns_provider_service,
-        }
+        Self { dns_provider_svc, dns_provider_repo}
     }
 }
 
@@ -167,8 +174,14 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
             }
 
             res = self
-                .dns_provider_service
-                .add_record(&cert.domain, &sub_domain, val.as_str(), "TXT")
+                .dns_provider_svc
+                .add_record(
+                    cert.provider_id,
+                    &cert.domain,
+                    &sub_domain,
+                    val.as_str(),
+                    "TXT",
+                )
                 .await?;
 
             challenges.push((identifier, &challenge.url));
@@ -209,8 +222,12 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
                 false => {
                     // error!(?state, tries, "order is not ready");
                     error!("order is not ready");
-                    self.dns_provider_service
-                        .remove_record(&cert.domain, res.record.unwrap().id.unwrap().as_str())
+                    self.dns_provider_svc
+                        .remove_record(
+                            cert.provider_id,
+                            &cert.domain,
+                            res.record.unwrap().id.unwrap().as_str(),
+                        )
                         .await?;
                     return Err(Error::Acme("order is not ready".to_string()));
                 }
@@ -219,8 +236,9 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
 
         let state = order.state();
         //remove dns record
-        self.dns_provider_service
+        self.dns_provider_svc
             .remove_record(
+                cert.provider_id,
                 &cert.domain,
                 res.clone().record.unwrap().id.unwrap().as_str(),
             )
@@ -265,5 +283,15 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
         );
 
         Ok(())
+    }
+
+    async fn list_dns_providers(&self) -> Result<Vec<DnsProvider>, Error> {
+        let providers = self
+            .dns_provider_repo
+            .list_dns_providers()
+            .await
+            .or_else(|err| Err(Error::Acme(err.to_string())))?;
+
+        Ok(providers)
     }
 }

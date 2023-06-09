@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use derive_more::Display;
-use pangu_domain::errors::Error;
+use pangu_domain::{errors::Error, model::DnsProvider};
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, Display)]
 #[display(
@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
     dns_provider
 )]
 pub struct SSLCertRequest {
+    pub provider_id: i64,
     pub domain: String,
     pub subdomain: String,
     pub email: String,
@@ -18,4 +19,5 @@ pub struct SSLCertRequest {
 #[async_trait]
 pub trait SSLCertApplicationService {
     async fn create_cert(&self, cert: SSLCertRequest) -> Result<(), Error>;
+    async fn list_dns_providers(&self) -> Result<Vec<DnsProvider>, Error>;
 }

@@ -23,10 +23,16 @@ pub struct ResponseData {
 pub trait DnsProviderService {
     async fn add_record(
         &self,
+        provider_id: i64,
         domain: &str,
         subdomain: &str,
         value: &str,
         record_type: &str,
     ) -> Result<ResponseData, Error>;
-    async fn remove_record(&self, domain: &str, record_id: &str) -> Result<(), Error>;
+    async fn remove_record(
+        &self,
+        provider_id: i64,
+        domain: &str,
+        record_id: &str,
+    ) -> Result<(), Error>;
 }

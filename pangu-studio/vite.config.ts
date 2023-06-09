@@ -50,7 +50,7 @@ export default defineConfig(async () => ({
         // 自动注册图标组件
         IconsResolver({
           prefix: 'icon',
-          enabledCollections: ['ep', 'mdi', 'carbon', 'cib', 'ion'],
+          enabledCollections: ['ep', 'mdi', 'carbon', 'cib', 'ion', 'ic'],
         }),
         // Auto register Element Plus components
         // 自动导入 Element Plus 组件

@@ -4,6 +4,8 @@ mod service;
 
 use once_cell::sync::OnceCell as SyncCell;
 use pangu_domain::errors::Error;
+use pangu_domain::service::sslcert::DnsProviderService;
+use pangu_application::sslcert::SSLCertApplicationService;
 use std::fs;
 
 use tokio::sync::OnceCell;
@@ -12,6 +14,8 @@ use crate::repository::db_conn_pool;
 use crate::repository::run_migrations;
 use crate::repository::DnsProviderRepositoryImpl;
 use crate::repository::{app_data_path, init_logger, EndpointRepositoryImpl};
+use crate::service::DnspodServiceImpl;
+use crate::service::SSLCertApplicationServiceImpl;
 // use crate::store::project::{save_project, delete_project, list_projects, Project};
 
 use test_context::{test_context, AsyncTestContext, TestContext};
@@ -24,10 +28,18 @@ pub fn runtime() -> Result<&'static Runtime, Error> {
     RUNTIME.get_or_try_init(|| Runtime::new().or_else(|err| Err(Error::Runtime(err.to_string()))))
 }
 
+struct Services {
+    dns_provider_svc: Box<dyn DnsProviderService + Send + Sync>,
+}
+struct AppServices {
+    sslcert_app_svc: Box<dyn SSLCertApplicationService + Send + Sync>,
+}
 pub struct MyAsyncContext {
     // value: String,
     endpoint_repo: EndpointRepositoryImpl,
     dns_provider_repo: DnsProviderRepositoryImpl,
+    services: Services,
+    app_services: AppServices,
 }
 
 pub struct MyContext {
@@ -38,10 +50,21 @@ pub struct MyContext {
 impl AsyncTestContext for MyAsyncContext {
     async fn setup() -> MyAsyncContext {
         initialize().await;
+        let dns_provider_repo = DnsProviderRepositoryImpl::new(db_conn_pool().await.unwrap());
+        let dnspod_svc = DnspodServiceImpl::new(Box::new(dns_provider_repo.clone()));
+
         MyAsyncContext {
             // value: "test".to_string()
             endpoint_repo: EndpointRepositoryImpl::new(),
-            dns_provider_repo: DnsProviderRepositoryImpl::new(),
+            dns_provider_repo: dns_provider_repo.clone(),
+            services: Services {
+                dns_provider_svc: Box::new(DnspodServiceImpl::new(Box::new(dns_provider_repo.clone()))),
+            },
+            app_services: AppServices {
+                sslcert_app_svc: Box::new(SSLCertApplicationServiceImpl::new(
+                    Box::new(dnspod_svc)),
+                ),
+            },
         }
     }
 

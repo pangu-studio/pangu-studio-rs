@@ -10,7 +10,7 @@ hyper = { version = "*", features = ["full"] }
 reqwest = { version = "0.11", features = ["json"] }
 pangu-domain = { path = "../pangu-domain" }
 pangu-application = { path = "../pangu-application" }
-bollard = { git = "https://github.com/pangu-studio/bollard.git", branch = "master" }
+pangu-bollard = "0.14.0"
 sqlx = { version = "0.7.0-alpha.3", features = [
     "sqlite",
     "chrono",

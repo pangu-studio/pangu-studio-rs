@@ -1,7 +1,7 @@
 mod docker;
 pub use docker::*;
 use once_cell::sync::OnceCell;
-use bollard::{Docker,ClientVersion};
+use pangu_bollard::{Docker,ClientVersion};
 use std::sync::Mutex;
 
 

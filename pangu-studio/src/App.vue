@@ -91,6 +91,7 @@ onMounted(() => {
 .main {
   margin: 0;
   padding: 0;
+  height: 100%;
 }
 
 .logo {
@@ -202,4 +203,6 @@ h1 {
 .menu-icon {
   // padding-right: 8px;
 
-}</style>
+}
+
+</style>
