@@ -54,6 +54,7 @@ impl Model for DnsProvider {
 #[derive(sqlx::Type)]
 #[sqlx(rename_all = "lowercase")]
 #[derive(Debug, Clone, Serialize, Deserialize, Display)]
+#[serde(rename_all = "snake_case")]
 pub enum SSLCertStatus {
     Pending,
     Success,
@@ -62,8 +63,9 @@ pub enum SSLCertStatus {
 // ssl_cert
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, Display)]
 #[display(
-    fmt = "Endpoint: [id={}, domains={}, cert_chain={}, private_key={}, status = {},deleted={:?}], create_time={:?}, update_time={:?}",
+    fmt = "Endpoint: [id={}, sn={}, domains={}, cert_chain={}, private_key={}, status = {},deleted={:?}], create_time={:?}, update_time={:?}",
     id,
+    sn,
     domains,
     cert_chain,
     private_key,
@@ -74,24 +76,51 @@ pub enum SSLCertStatus {
 )]
 pub struct SSLCertificate {
     pub id: i64,
+    pub sn: String,
     pub domains: String,
+    pub mail: String,
     pub cert_chain: String,
     pub private_key: String,
     pub status: SSLCertStatus,
     pub deleted: Option<bool>,
+    pub addition: Option<String>,
     pub create_time: Option<DateTime<Utc>>,
     pub update_time: Option<DateTime<Utc>>,
+    pub expire_time: Option<DateTime<Utc>>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, Display, Default)]
+#[display(
+    fmt = "SSLCertificateAddition: [identifier={}, record_value={}, record_type={}]",
+    identifier,
+    record_value,
+    record_type
+)]
+pub struct SSLCertificateAddition {
+    pub identifier: String,
+    pub record_value: String,
+    pub record_type: String,
 }
 impl SSLCertificate {
-    pub fn new(domains: &str, cert_chain: &str, private_key: &str) -> Self {
+    pub fn new(
+        sn: &str,
+        mail: &str,
+        domains: &str,
+        cert_chain: &str,
+        private_key: &str,
+        addition: &str,
+    ) -> Self {
         Self {
             id: 0,
+            sn: sn.to_string(),
+            mail: mail.to_string(),
             domains: domains.to_string(),
             cert_chain: cert_chain.to_string(),
             private_key: private_key.to_string(),
             status: SSLCertStatus::Pending,
+            addition: Some(addition.to_string()),
             create_time: Some(Utc::now()),
             update_time: None,
+            expire_time: None,
             deleted: Some(false),
         }
     }

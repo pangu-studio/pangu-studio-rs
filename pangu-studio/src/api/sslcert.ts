@@ -11,9 +11,33 @@ export interface DnsProvider {
 }
 
 export interface SSLCertificate{
-  
+   id: number,
+  domains: string,
+  cert_chain: string,
+  private_key: string,
+  status: string,
+  deleted: boolean,
+  addition: string,
+  create_time: string,
+  update_time: string,
+}
+export interface SSLCertificateCreate { 
+  sn: string,
+  provider_id: number,
+  mail: string,
+  domain: string,
+  subdomain: string,
 }
 
 export async function listDnsProvider(): Promise<DnsProvider[]> {
   return invoke('list_dns_providers')
+}
+export async function listSSLCertificate(): Promise<SSLCertificate[]> {
+  return invoke('list_sslcerts')
+}
+export async function applyCertificate(cert: SSLCertificateCreate):Promise<SSLCertificate>{
+  return invoke('apply_certificate', {cert})
+}
+export async function getSslCertBySN(sn:string):Promise<SSLCertificate>{
+  return invoke('get_sslcert_by_sn', {sn})
 }

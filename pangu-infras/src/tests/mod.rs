@@ -2,27 +2,23 @@
 mod repository;
 mod service;
 
+use std::fs;
+use tokio::runtime::Runtime;
+use tokio::sync::OnceCell;
+
 use once_cell::sync::OnceCell as SyncCell;
 use pangu_application::sslcert::SSLCertApplicationService;
 use pangu_domain::errors::Error;
+use pangu_domain::repository::SSLCertificateRepository;
 use pangu_domain::service::sslcert::DnsProviderService;
-use pangu_domain::repository::{SSLCertificateRepository};
-use std::fs;
 
-use tokio::sync::OnceCell;
-
-use crate::repository::db_conn_pool;
-use crate::repository::run_migrations;
-use crate::repository::DnsProviderRepositoryImpl;
-use crate::repository::SSLCertificateRepositoryImpl;
-use crate::repository::{app_data_path, init_logger, EndpointRepositoryImpl};
-use crate::service::DnspodServiceImpl;
-use crate::service::SSLCertApplicationServiceImpl;
-// use crate::store::project::{save_project, delete_project, list_projects, Project};
+use crate::repository::{
+    DnsProviderRepositoryImpl, EndpointRepositoryImpl, SSLCertificateRepositoryImpl,
+};
+use crate::service::{DnspodServiceImpl, SSLCertApplicationServiceImpl};
+use crate::{app_data_path, db_conn_pool, init_logger, run_migrations};
 
 use test_context::{test_context, AsyncTestContext, TestContext};
-
-use tokio::runtime::Runtime;
 
 ///tokio runtime for sync testing
 pub fn runtime() -> Result<&'static Runtime, Error> {
@@ -59,14 +55,14 @@ impl AsyncTestContext for MyAsyncContext {
         let db_pool = db_conn_pool().await.unwrap();
         let dns_provider_repo = DnsProviderRepositoryImpl::new(db_pool);
         let dnspod_svc = DnspodServiceImpl::new(Box::new(dns_provider_repo.clone()));
-        let ssl_cert_repo = SSLCertificateRepositoryImpl::new(db_pool);
+        let ssl_cert_repo = Box::new(SSLCertificateRepositoryImpl::new(db_pool));
 
         MyAsyncContext {
             // value: "test".to_string()
             repositories: Repositories {
                 endpoint_repo: EndpointRepositoryImpl::new(db_pool),
                 dns_provider_repo: dns_provider_repo.clone(),
-                ssl_cert_repo: Box::new(ssl_cert_repo.clone()),
+                ssl_cert_repo: ssl_cert_repo.clone(),
             },
             services: Services {
                 dns_provider_svc: Box::new(DnspodServiceImpl::new(Box::new(
@@ -77,7 +73,7 @@ impl AsyncTestContext for MyAsyncContext {
                 sslcert_app_svc: Box::new(SSLCertApplicationServiceImpl::new(
                     Box::new(dnspod_svc),
                     Box::new(dns_provider_repo.clone()),
-                    Box::new(ssl_cert_repo.clone()),
+                    ssl_cert_repo.clone(),
                 )),
             },
         }

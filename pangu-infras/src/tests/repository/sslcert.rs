@@ -54,6 +54,8 @@ async fn remove_record(ctx: &mut MyAsyncContext) {
 #[tokio::test]
 async fn create_cert_db(ctx: &mut MyAsyncContext) {
     let model = SSLCertificate::new(
+        "abcdd",
+        "a@b.com",
         "domains.com",
         r#"-----BEGIN CERTIFICATE-----
 MIIEXzCCA0egAwIBAgISBJMB/wzkZK8F+ABTOcpcdXxQMA0GCSqGSIb3DQEBCwUA
@@ -149,6 +151,7 @@ MHcCAQEEINAmGlrDQx9JyKuTaWxnA6ev3Q3KAyWGIT+WayW3s+zaoAoGCCqGSM49
 AwEHoUQDQgAExXIf9Ywy5C0jI8xjfQi7UVIIk2zcX4Hk9bC47KpeZVnkMwxqasfI
 oLfYmjMa17sJms52h4hoeQVREueL7zY4OA==
 -----END EC PRIVATE KEY-----"#,
+        "{}",
     );
     let res = ctx.repositories.ssl_cert_repo.create(model).await;
     assert_eq!(res.is_ok(), true);
@@ -160,11 +163,11 @@ async fn get_cert(ctx: &mut MyAsyncContext) -> anyhow::Result<()> {
     // let ssl_app_svc = SSLCertApplicationServiceImpl::new(dnspod_svc);
 
     let sslcert_req = SSLCertRequest {
+        sn: "abcd".to_string(),
         provider_id: 1,
         domain: "test.studio".to_string(),
         subdomain: "www".to_string(),
-        email: "a.b@gmail.com".to_string(),
-        dns_provider: "dnspod".to_string(),
+        mail: "a.b@gmail.com".to_string(),
     };
 
     ctx.app_services

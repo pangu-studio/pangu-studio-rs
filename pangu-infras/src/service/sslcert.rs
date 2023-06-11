@@ -3,7 +3,7 @@ use simplelog::info;
 
 use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest};
 use pangu_domain::errors::Error;
-use pangu_domain::model::{DnsProvider, SSLCertStatus, SSLCertificate};
+use pangu_domain::model::{DnsProvider, SSLCertStatus, SSLCertificate, SSLCertificateAddition};
 use pangu_domain::repository::{DnsProviderRepository, SSLCertificateRepository};
 use pangu_domain::service::sslcert::{DnsProviderService, ResponseData};
 use rcgen::{Certificate, CertificateParams, DistinguishedName};
@@ -89,7 +89,7 @@ impl DnsProviderService for DnspodServiceImpl {
     }
 }
 impl DnspodServiceImpl {
-    pub fn new(dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync + 'static>) -> Self {
+    pub fn new(dns_provider_repo: Box<dyn DnsProviderRepository + Send + Sync>) -> Self {
         Self { dns_provider_repo }
     }
 }
@@ -125,11 +125,12 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
 
         let account = Account::create(
             &NewAccount {
-                contact: &[format!("mailto:{}", cert.email).as_str()],
+                contact: &[format!("mailto:{}", cert.mail).as_str()],
                 terms_of_service_agreed: true,
                 only_return_existing: false,
             },
-            LetsEncrypt::Production.url(),
+            // LetsEncrypt::Production.url(),
+            LetsEncrypt::Staging.url(),
             None,
         )
         .await
@@ -155,6 +156,8 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
         let authorizations = order.authorizations().await.unwrap();
         let mut challenges = Vec::with_capacity(authorizations.len());
         let mut res: ResponseData = Default::default();
+
+        let mut addition: SSLCertificateAddition = Default::default();
         for authz in &authorizations {
             match authz.status {
                 AuthorizationStatus::Pending => {}
@@ -173,12 +176,17 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
             println!("Please set the following DNS record then press any key:");
             let val = order.key_authorization(challenge).dns_value();
             println!("_acme-challenge.{} IN TXT {}", identifier, val);
+  
 
             let mut sub_domain = format!("_acme-challenge.{}", cert.subdomain);
 
             if identifier == &cert.domain && cert.subdomain == "www" {
                 sub_domain = "_acme-challenge".to_string();
             }
+
+            addition.identifier = format!("{}.{}",sub_domain, &cert.domain);
+            addition.record_type = "TXT".to_string();
+            addition.record_value = val.clone();
 
             res = self
                 .dns_provider_svc
@@ -194,21 +202,25 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
             challenges.push((identifier, &challenge.url));
         }
 
-        // Let the server know we're ready to accept the challenges.
-        sleep(Duration::from_secs(15)).await;
-        for (_, url) in &challenges {
-            order.set_challenge_ready(url).await.unwrap();
-        }
-
+        let add_json = serde_json::to_string(&addition).unwrap();
         // Exponentially back off until the order becomes ready or invalid.
         let mut tries = 1u8;
-        let mut delay = Duration::from_secs(20);
         let model = SSLCertificate::new(
+            &cert.sn,
+            &cert.mail,
             (format!("{}.{}", &cert.subdomain, &cert.domain)).as_str(),
             "",
             "",
+            &add_json,
         );
         let cert_id = self.sslcert_repo.create(model.clone()).await?;
+
+        // Let the server know we're ready to accept the challenges.
+        sleep(Duration::from_secs(5)).await;
+        for (_, url) in &challenges {
+            order.set_challenge_ready(url).await.unwrap();
+        }
+        let mut delay = Duration::from_secs(20);
         loop {
             debug!(
                 "waiting for order to become ready. {}s",
@@ -288,14 +300,7 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
             }
         };
 
-        // save to db
-
-        // let model = SSLCertificate::new(
-        //     (format!("{}.{}", &cert.subdomain, &cert.domain)).as_str(),
-        //     &cert_chain_pem,
-        //     &ssl_cert.serialize_private_key_pem(),
-        // );
-        //find
+        // updater certificate status to db
         let mut cert_db = self.sslcert_repo.find(cert_id).await?;
         cert_db.id = cert_id;
         cert_db.private_key = ssl_cert.serialize_private_key_pem();
@@ -332,5 +337,8 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
             .or_else(|err| Err(Error::Acme(err.to_string())))?;
 
         Ok(certs)
+    }
+    async fn get_sslcert_by_sn(&self, sn: &str) -> Result<SSLCertificate, Error> {
+        self.sslcert_repo.find_by_sn(sn).await
     }
 }

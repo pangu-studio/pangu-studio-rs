@@ -1,21 +1,19 @@
 use async_trait::async_trait;
 use chrono::Utc;
 use pangu_domain::errors::Error;
-use pangu_domain::model::{Endpoint, EndpointHostType, EndpointType, Model};
+use pangu_domain::model::{Endpoint, Model};
 use pangu_domain::repository::{EndpointRepository, Repository};
 
 use sqlx::{Pool, Sqlite};
 
-use super::{db, db_conn_pool};
+use crate::{ db_conn_pool};
 pub struct EndpointRepositoryImpl {
     db_pool: &'static Pool<Sqlite>,
 }
 
 impl EndpointRepositoryImpl {
-    pub fn new(db_pool: &'static Pool<Sqlite>,) -> Self {
-        EndpointRepositoryImpl {
-            db_pool: db_pool,
-        }
+    pub fn new(db_pool: &'static Pool<Sqlite>) -> Self {
+        EndpointRepositoryImpl { db_pool: db_pool }
     }
 }
 

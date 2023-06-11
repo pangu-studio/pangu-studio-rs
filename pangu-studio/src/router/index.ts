@@ -8,6 +8,7 @@ import FileManager from '~/pages/filemanager/index.vue'
 import { appWindow } from '@tauri-apps/api/window'
 import DnsProvider from '~/pages/sslcert/DnsProvider.vue'
 import Certificate from '~/pages/sslcert/Certificate.vue'
+import ApplyCertificate from '~/pages/sslcert/ApplyCert.vue'
 
 const routes = [
   {
@@ -37,6 +38,12 @@ const routes = [
         name: 'Certificate',
         component: Certificate,
         meta: { title: '证书列表' },
+      },
+      {
+        path: 'apply',
+        name: 'ApplyCertificate',
+        component: ApplyCertificate,
+        meta: { title: '申请证书' },
       },
     ],
   },

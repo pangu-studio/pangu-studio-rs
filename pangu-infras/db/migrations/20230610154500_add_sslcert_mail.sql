@@ -1,0 +1,1 @@
+ALTER TABLE ssl_certificates ADD COLUMN mail TEXT NOT NULL;
