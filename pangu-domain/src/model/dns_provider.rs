@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use crate::model::Model;
 use chrono::{DateTime, Utc};
 use derive_more::Display;
@@ -123,6 +125,14 @@ impl SSLCertificate {
             expire_time: None,
             deleted: Some(false),
         }
+    }
+    //签发证书
+    pub fn issue(&mut self, cert_chain: &str, private_key: &str) {
+        self.cert_chain = cert_chain.to_string();
+        self.private_key = private_key.to_string();
+        self.status = SSLCertStatus::Success;
+        self.update_time = Some(Utc::now());
+        self.expire_time = Some(Utc::now().add(chrono::Duration::days(90)));
     }
 }
 impl Model for SSLCertificate {

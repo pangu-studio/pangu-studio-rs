@@ -44,21 +44,22 @@ impl Repository<SSLCertificate, i64> for SSLCertificateRepositoryImpl {
             .last_insert_rowid();
         Ok(id)
     }
-    async fn update(&self, _cert: SSLCertificate) -> Result<(), Error> {
+    async fn update(&self, cert: SSLCertificate) -> Result<(), Error> {
         let sql = format!(
             r#"
-            UPDATE {} SET domains = ?1, cert_chain = ?2, private_key = ?3, status = ?4, deleted = ?5, update_time = ?6 WHERE id = ?7;
+            UPDATE {} SET domains = ?1, cert_chain = ?2, private_key = ?3, status = ?4, deleted = ?5, update_time = ?6, expire_time = ?7 WHERE id = ?8;
             "#,
             SSLCertificate::table_name()
         );
         sqlx::query(&sql)
-            .bind(_cert.domains)
-            .bind(_cert.cert_chain)
-            .bind(_cert.private_key)
-            .bind(_cert.status)
-            .bind(_cert.deleted)
-            .bind(_cert.update_time)
-            .bind(_cert.id)
+            .bind(cert.domains)
+            .bind(cert.cert_chain)
+            .bind(cert.private_key)
+            .bind(cert.status)
+            .bind(cert.deleted)
+            .bind(cert.update_time)
+            .bind(cert.expire_time)
+            .bind(cert.id)
             .execute(self.db_pool)
             .await
             .or_else(|err| Err(Error::Database(err)))?;

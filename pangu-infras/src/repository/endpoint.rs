@@ -46,7 +46,7 @@ impl Repository<Endpoint, i64> for EndpointRepositoryImpl {
         Ok(id)
     }
     //update model to db
-    async fn update(&self, endpoint: Endpoint) -> Result<(), Error> {
+    async fn update(&self, _endpoint: Endpoint) -> Result<(), Error> {
         return Ok(());
     }
     //find model by id from db
@@ -61,9 +61,8 @@ impl Repository<Endpoint, i64> for EndpointRepositoryImpl {
         //     });
     }
     //remove model
-    async fn remove(&self, id: i64) -> Result<(), Error> {
+    async fn remove(&self, _id: i64) -> Result<(), Error> {
         todo!("not implement");
-        return Ok(());
     }
 }
 #[async_trait]

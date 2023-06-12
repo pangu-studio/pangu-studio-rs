@@ -3,7 +3,7 @@ use simplelog::info;
 
 use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest};
 use pangu_domain::errors::Error;
-use pangu_domain::model::{DnsProvider, SSLCertStatus, SSLCertificate, SSLCertificateAddition};
+use pangu_domain::model::{DnsProvider, SSLCertificate, SSLCertificateAddition};
 use pangu_domain::repository::{DnsProviderRepository, SSLCertificateRepository};
 use pangu_domain::service::sslcert::{DnsProviderService, ResponseData};
 use rcgen::{Certificate, CertificateParams, DistinguishedName};
@@ -302,11 +302,13 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
 
         // updater certificate status to db
         let mut cert_db = self.sslcert_repo.find(cert_id).await?;
-        cert_db.id = cert_id;
-        cert_db.private_key = ssl_cert.serialize_private_key_pem();
-        cert_db.cert_chain = cert_chain_pem.clone();
-        cert_db.status = SSLCertStatus::Success;
-        cert_db.update_time = Some(chrono::Utc::now());
+
+        cert_db.issue(&cert_chain_pem, &ssl_cert.serialize_private_key_pem());
+
+        // cert_db.private_key = ssl_cert.serialize_private_key_pem();
+        // cert_db.cert_chain = cert_chain_pem.clone();
+        // cert_db.status = SSLCertStatus::Success;
+        // cert_db.update_time = Some(chrono::Utc::now());
         self.sslcert_repo.update(cert_db).await?;
         // self.sslcert_repo.create(model).await?;
 
