@@ -46,3 +46,5 @@ declare module '@vue/runtime-core' {
     IconRiPassExpiredLine: typeof import('~icons/ri/pass-expired-line')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+  }
+}

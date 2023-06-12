@@ -129,8 +129,8 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
                 terms_of_service_agreed: true,
                 only_return_existing: false,
             },
-            // LetsEncrypt::Production.url(),
-            LetsEncrypt::Staging.url(),
+            LetsEncrypt::Production.url(),
+            // LetsEncrypt::Staging.url(),
             None,
         )
         .await

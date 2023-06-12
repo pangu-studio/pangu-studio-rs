@@ -12,7 +12,7 @@
             </el-form-item>
 
             <el-form-item label="证书有效期">
-                <span>3个月</span>
+                <span>90天</span>
             </el-form-item>
             <el-form-item label="域名" prop="domain" required>
                 <el-input v-model="form.domain" />

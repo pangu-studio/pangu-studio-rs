@@ -1,16 +1,7 @@
-use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest};
+use pangu_application::sslcert::SSLCertRequest;
 use pangu_domain::model::{DnsProvider, SSLCertificate};
-use pangu_infras::service::sslcert::SSLCertApplicationServiceImpl;
-use sqlx::{Pool, Sqlite};
-use tauri::async_runtime;
 
-use crate::ApplicationService;
-// #[derive(Default)]
-struct MyState {
-    s: std::sync::Mutex<String>,
-    t: std::sync::Mutex<std::collections::HashMap<String, String>>,
-    db_pool: std::sync::Mutex<Pool<Sqlite>>,
-}
+
 // remember to call `.manage(MyState::default())`
 #[tauri::command]
 pub async fn list_dns_providers(
