@@ -1,15 +1,19 @@
 use async_trait::async_trait;
 use chrono::Utc;
 use pangu_domain::errors::Error;
-use pangu_domain::model::{Endpoint, EndpointHostType, EndpointType, Model};
+use pangu_domain::model::{Endpoint, Model};
 use pangu_domain::repository::{EndpointRepository, Repository};
 
-use super::{db, db_conn_pool};
-pub struct EndpointRepositoryImpl {}
+use sqlx::{Pool, Sqlite};
+
+use crate::{ db_conn_pool};
+pub struct EndpointRepositoryImpl {
+    db_pool: &'static Pool<Sqlite>,
+}
 
 impl EndpointRepositoryImpl {
-    pub fn new() -> Self {
-        EndpointRepositoryImpl {}
+    pub fn new(db_pool: &'static Pool<Sqlite>) -> Self {
+        EndpointRepositoryImpl { db_pool: db_pool }
     }
 }
 
@@ -17,7 +21,6 @@ impl EndpointRepositoryImpl {
 impl Repository<Endpoint, i64> for EndpointRepositoryImpl {
     //save model to db
     async fn create(&self, mut endpoint: Endpoint) -> Result<i64, Error> {
-        let pool = db_conn_pool().await?;
         let sql = format!("insert into {} (name,host,port,secret,host_type,endpoint_type,create_time) values (?1,?2,?3,?4,?5,?6,?7)",Endpoint::table_name());
         debug!("sql:{}\nendpoint:{}", sql, endpoint);
         let mut builder = sqlx::query(&sql)
@@ -35,7 +38,7 @@ impl Repository<Endpoint, i64> for EndpointRepositoryImpl {
         builder = builder.bind(endpoint.create_time);
 
         let id = builder
-            .execute(pool)
+            .execute(self.db_pool)
             .await
             .or_else(|err| Err(Error::Database(err)))?
             .last_insert_rowid();

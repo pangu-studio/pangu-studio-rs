@@ -14,6 +14,11 @@
                                 style="margin-right: 4px" />证书管理&nbsp;&nbsp;&nbsp;&nbsp;
                         </el-button>
                     </router-link>
+                    <router-link to="/sslcert/certificates" style="text-decoration: none;">
+                        <el-button type="" text bg><icon-ri-pass-expired-line
+                                style="margin-right: 4px" />证书监测&nbsp;&nbsp;&nbsp;&nbsp;
+                        </el-button>
+                    </router-link>
 
                 </div>
                 <div class="close-btn" style="" @click="isCollapse = !isCollapse">
@@ -37,16 +42,15 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { onMounted, ref, computed } from "vue";
-import { useSslCertStore } from "@/stores/sslcert";
+import { ref } from "vue";
 import { ArrowRight } from '@element-plus/icons-vue'
-import {useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 
-const route= useRoute();
+const route = useRoute();
 
 let activeClass = "sub-menu--collapse";
 
-const store = useSslCertStore();
+// const store = useSslCertStore();
 const isCollapse = ref(false);
 </script>
 <style lang="scss" scoped>

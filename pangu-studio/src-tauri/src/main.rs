@@ -1,17 +1,18 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[macro_use]
+extern crate log;
+extern crate simplelog;
+
 mod command;
 
-use futures::executor::block_on;
 use pangu_application::sslcert::SSLCertApplicationService;
-use pangu_infras::repository::{
-    app_data_path, db_conn_pool, init_logger, run_migrations, DnsProviderRepositoryImpl,
-};
+use pangu_infras::repository::{DnsProviderRepositoryImpl, SSLCertificateRepositoryImpl};
 use pangu_infras::service::sslcert::SSLCertApplicationServiceImpl;
 use pangu_infras::service::DnspodServiceImpl;
+use pangu_infras::{app_data_path, db_conn_pool, init_logger, run_migrations};
 use std::fs;
-use std::sync::Mutex;
 use tauri::api::path;
 use tauri::async_runtime;
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -51,17 +52,19 @@ fn main() {
     let db_pool = async_runtime::block_on(async { db_conn_pool().await.unwrap() });
 
     //===================== repository ======================
-    let dns_provider_repo = DnsProviderRepositoryImpl::new(db_pool);
+    let dns_provider_repo = Box::new(DnsProviderRepositoryImpl::new(db_pool));
+    let sslcert_repo = Box::new(SSLCertificateRepositoryImpl::new(db_pool));
 
     //================= domain service ======================
 
-    let dns_provider_service = DnspodServiceImpl::new(Box::new(dns_provider_repo.clone()));
+    let dns_provider_svc = Box::new(DnspodServiceImpl::new(dns_provider_repo.clone()));
 
     //================= application service ======================
     let app_svc = ApplicationService {
         sslcert_app_svc: Box::new(SSLCertApplicationServiceImpl::new(
-            Box::new(dns_provider_service),
-            Box::new(dns_provider_repo),
+            dns_provider_svc,
+            dns_provider_repo,
+            sslcert_repo,
         )),
     };
 
@@ -70,6 +73,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             greet,
             command::sslcert::list_dns_providers,
+            command::sslcert::list_sslcerts,
+            command::sslcert::apply_certificate,
+            command::sslcert::get_sslcert_by_sn,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

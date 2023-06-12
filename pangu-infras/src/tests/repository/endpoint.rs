@@ -7,7 +7,12 @@ use pangu_domain::repository::{EndpointRepository, Repository};
 #[test_context(MyAsyncContext)]
 #[tokio::test]
 async fn list_endpoints(ctx: &mut MyAsyncContext) {
-    let rs = ctx.endpoint_repo.list_endpoints().await.unwrap();
+    let rs = ctx
+        .repositories
+        .endpoint_repo
+        .list_endpoints()
+        .await
+        .unwrap();
 
     for r in rs.iter() {
         println!("endpoint: {:?}", r);
@@ -26,6 +31,11 @@ async fn create_endpoint(ctx: &mut MyAsyncContext) {
         EndpointHostType::HTTP,
         EndpointType::Server,
     );
-    let id = ctx.endpoint_repo.create(endpoint).await.unwrap();
+    let id = ctx
+        .repositories
+        .endpoint_repo
+        .create(endpoint)
+        .await
+        .unwrap();
     println!("endpoint id: {:?}", id);
 }

@@ -1,0 +1,1 @@
+ALTER TABLE ssl_certificates ADD COLUMN status TEXT NOT NULL DEFAULT 'pending';
