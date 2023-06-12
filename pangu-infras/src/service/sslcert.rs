@@ -176,7 +176,6 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
             println!("Please set the following DNS record then press any key:");
             let val = order.key_authorization(challenge).dns_value();
             println!("_acme-challenge.{} IN TXT {}", identifier, val);
-  
 
             let mut sub_domain = format!("_acme-challenge.{}", cert.subdomain);
 
@@ -184,7 +183,7 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
                 sub_domain = "_acme-challenge".to_string();
             }
 
-            addition.identifier = format!("{}.{}",sub_domain, &cert.domain);
+            addition.identifier = format!("{}.{}", sub_domain, &cert.domain);
             addition.record_type = "TXT".to_string();
             addition.record_value = val.clone();
 
@@ -304,13 +303,7 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
         let mut cert_db = self.sslcert_repo.find(cert_id).await?;
 
         cert_db.issue(&cert_chain_pem, &ssl_cert.serialize_private_key_pem());
-
-        // cert_db.private_key = ssl_cert.serialize_private_key_pem();
-        // cert_db.cert_chain = cert_chain_pem.clone();
-        // cert_db.status = SSLCertStatus::Success;
-        // cert_db.update_time = Some(chrono::Utc::now());
         self.sslcert_repo.update(cert_db).await?;
-        // self.sslcert_repo.create(model).await?;
 
         info!("certficate chain:\n\n{}", cert_chain_pem);
         info!("private key:\n\n{}", ssl_cert.serialize_private_key_pem());
