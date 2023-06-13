@@ -9,6 +9,8 @@ import { appWindow } from '@tauri-apps/api/window'
 import DnsProvider from '~/pages/sslcert/DnsProvider.vue'
 import Certificate from '~/pages/sslcert/Certificate.vue'
 import ApplyCertificate from '~/pages/sslcert/ApplyCert.vue'
+import Trash from '~/pages/sslcert/Trash.vue'
+import Monitor from '~/pages/sslcert/Monitor.vue'
 
 const routes = [
   {
@@ -44,6 +46,18 @@ const routes = [
         name: 'ApplyCertificate',
         component: ApplyCertificate,
         meta: { title: '申请证书' },
+      },
+      {
+        path: 'monitor',
+        name: 'Monitor',
+        component: Monitor,
+        meta: { title: '证书监测' },
+      },
+      {
+        path: 'trash',
+        name: 'Trash',
+        component: Trash,
+        meta: { title: '回收站' },
       },
     ],
   },

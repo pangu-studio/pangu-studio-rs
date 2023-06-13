@@ -41,3 +41,6 @@ export async function applyCertificate(cert: SSLCertificateCreate):Promise<SSLCe
 export async function getSslCertBySN(sn:string):Promise<SSLCertificate>{
   return invoke('get_sslcert_by_sn', {sn})
 }
+export async function removeSslCert(id:number):Promise<SSLCertificate>{
+  return invoke('remove_sslcert', {id})
+}

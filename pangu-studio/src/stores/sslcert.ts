@@ -1,4 +1,4 @@
-import { DnsProvider, listDnsProvider, listSSLCertificate,SSLCertificate,getSslCertBySN } from './../api/sslcert'
+import { DnsProvider, listDnsProvider, listSSLCertificate,SSLCertificate,getSslCertBySN, removeSslCert } from './../api/sslcert'
 import { defineStore } from 'pinia'
 // import { da } from 'element-plus/es/locale';
 export const useSslCertStore = defineStore('sslcert', {
@@ -33,6 +33,11 @@ export const useSslCertStore = defineStore('sslcert', {
     },
     async getSslCertBySN(sn:string) {
       this._applyCert = await getSslCertBySN(sn)
+    },
+    async removeSslCert(id:number) { 
+      removeSslCert(id).then(()=> {
+        this._sslcerts = this._sslcerts.filter((item) => item.id !== id)
+      })
     }
   },
 })

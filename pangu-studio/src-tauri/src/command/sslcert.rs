@@ -49,3 +49,15 @@ pub async fn get_sslcert_by_sn(
         .await
         .map_err(|err| err.to_string())
 }
+
+#[tauri::command]
+pub async fn remove_sslcert(
+    app_svc: tauri::State<'_, crate::ApplicationService>,
+id: i64,
+) -> Result<(), String> {
+    app_svc
+        .sslcert_app_svc
+        .remove_sslcert(id)
+        .await
+        .map_err(|err| err.to_string())
+}

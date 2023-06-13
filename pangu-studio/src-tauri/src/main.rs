@@ -76,6 +76,7 @@ fn main() {
             command::sslcert::list_sslcerts,
             command::sslcert::apply_certificate,
             command::sslcert::get_sslcert_by_sn,
+            command::sslcert::remove_sslcert,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

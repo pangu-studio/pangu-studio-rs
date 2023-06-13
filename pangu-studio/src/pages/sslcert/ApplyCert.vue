@@ -42,9 +42,9 @@
         </el-form>
 
         <div :class="stepActive !== 2 ? 'hidden-form' : ''">
-            <div class="tip">已为您自动添加解析记录，请等待域名完成验证。</div>
+            <div class="tip">已为您自动添加解析记录，请等待域名完成验证（可能需等待2分钟，请勿关闭程序!!!）</div>
             <el-table v-if="stepActive === 2" :data="store.applyCertAddtion">
-                <el-table-column prop="identifier" label="主机记录" width="180" />
+                <el-table-column prop="identifier" label="主机记录" width="280" />
                 <!-- <el-table-column prop="domain" label="域名" width="180" /> -->
                 <el-table-column prop="record_type" label="记录类型" width="180" />
                 <el-table-column prop="record_value" label="记录值" />
@@ -63,13 +63,13 @@
                 <el-table-column label="私钥" width="180">
                     <template #default="scope">
                         {{ handle_crt(scope.row.private_key) }}
-                        <icon-ic-baseline-content-copy style="cursor: pointer;" />
+                        <icon-ic-baseline-content-copy style="cursor: pointer;" @click="doCopy(scope.row.private_key)" />
                     </template>
                 </el-table-column>
                 <el-table-column label="证书" width="180">
                     <template #default="scope">
                         {{ handle_crt(scope.row.cert_chain) }}
-                        <icon-ic-baseline-content-copy style="cursor: pointer;" />
+                        <icon-ic-baseline-content-copy style="cursor: pointer;" @click="doCopy(scope.row.cert_chain)" />
                     </template>
                 </el-table-column>
                 <el-table-column label="状态" width="230">
@@ -86,8 +86,8 @@
             </el-table>
         </div>
         <div class="operate-btn-group">
-            <el-button :class="stepActive !== 1 ? 'hidden-form' : ''" type="primary"
-                @click="submmitApply(certFormRef)">提交证书申请</el-button>
+            <el-button v-loading.fullscreen.lock="fullscreenLoading" :class="stepActive !== 1 ? 'hidden-form' : ''"
+                type="primary" @click="submmitApply(certFormRef)">提交证书申请</el-button>
             <el-button :class="stepActive !== 2 ? 'hidden-form' : ''" type="primary" loading>等待验证</el-button>
             <el-button type="" @click="router.push({ path: '/sslcert/certificates' })">返回列表</el-button>
         </div>
@@ -99,10 +99,29 @@ import { useSslCertStore } from '@/stores/sslcert'
 import { FormRules, FormInstance } from 'element-plus'
 import { SSLCertificateCreate, applyCertificate } from '@/api/sslcert'
 import { useRouter } from "vue-router";
+import useClipboard from 'vue-clipboard3'
 
 import dateUtil from "@/utils/date"
 const router = useRouter()
 var store = useSslCertStore()
+
+const { toClipboard } = useClipboard()
+
+const copyMessage = "复制成功"
+const doCopy = async (txt: string) => {
+
+    try {
+        await toClipboard(txt).then(() => {
+            ElMessage({
+                message: copyMessage,
+                type: 'success',
+            })
+        })
+    } catch (e) {
+        console.error(e)
+    }
+}
+
 let stepActive = ref(1)
 let form = reactive({
     domain: '',
@@ -117,6 +136,9 @@ interface Addition {
     record_value: string,
     record_type: string
 }
+
+const fullscreenLoading = ref(false)
+
 
 let addition = ref([] as Addition[])
 
@@ -148,6 +170,7 @@ async function submmitApply(formEl: FormInstance | undefined) {
     await formEl.validate((valid, fields) => {
         if (valid) {
             console.log('submit!')
+            fullscreenLoading.value = true
             const items = form.domain.split(".")
             const root = items[items.length - 2] + "." + items[items.length - 1]
             const subdomain = items.slice(0, items.length - 2).join(".")
@@ -179,6 +202,7 @@ async function submmitApply(formEl: FormInstance | undefined) {
             let timer = setInterval(() => {
                 store.getSslCertBySN(certCreate.sn).then(() => {
                     console.log('fetch ssl cert success')
+                    fullscreenLoading.value = false
                     stepActive.value = 2
                     clearInterval(timer)
 

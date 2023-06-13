@@ -4,7 +4,7 @@ use simplelog::info;
 use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest};
 use pangu_domain::errors::Error;
 use pangu_domain::model::{DnsProvider, SSLCertificate, SSLCertificateAddition};
-use pangu_domain::repository::{DnsProviderRepository, SSLCertificateRepository};
+use pangu_domain::repository::{DnsProviderRepository, Repository, SSLCertificateRepository};
 use pangu_domain::service::sslcert::{DnsProviderService, ResponseData};
 use rcgen::{Certificate, CertificateParams, DistinguishedName};
 
@@ -335,5 +335,9 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
     }
     async fn get_sslcert_by_sn(&self, sn: &str) -> Result<SSLCertificate, Error> {
         self.sslcert_repo.find_by_sn(sn).await
+    }
+
+    async fn remove_sslcert(&self, id: i64) -> Result<(), Error> {
+        self.sslcert_repo.remove(id).await
     }
 }

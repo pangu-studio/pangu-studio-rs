@@ -14,9 +14,14 @@
                                 style="margin-right: 4px" />证书管理&nbsp;&nbsp;&nbsp;&nbsp;
                         </el-button>
                     </router-link>
-                    <router-link to="/sslcert/certificates" style="text-decoration: none;">
+                    <router-link to="/sslcert/monitor" style="text-decoration: none;">
                         <el-button type="" text bg><icon-ri-pass-expired-line
                                 style="margin-right: 4px" />证书监测&nbsp;&nbsp;&nbsp;&nbsp;
+                        </el-button>
+                    </router-link>
+                    <router-link to="/sslcert/trash" style="text-decoration: none;">
+                        <el-button type="" text bg><icon-ic-outline-delete-outline
+                                style="margin-right: 4px" />回收站&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         </el-button>
                     </router-link>
 

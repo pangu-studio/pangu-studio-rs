@@ -14,6 +14,7 @@ declare module '@vue/runtime-core' {
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCol: typeof import('element-plus/es')['ElCol']
     ElContainer: typeof import('element-plus/es')['ElContainer']
+    ElDialog: typeof import('element-plus/es')['ElDialog']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElHeader: typeof import('element-plus/es')['ElHeader']
@@ -38,6 +39,7 @@ declare module '@vue/runtime-core' {
     IconCibDocker: typeof import('~icons/cib/docker')['default']
     'IconIc:outlineKeyboardArrowLeft': typeof import('~icons/ic/outline-keyboard-arrow-left')['default']
     IconIcBaselineContentCopy: typeof import('~icons/ic/baseline-content-copy')['default']
+    IconIcOutlineDeleteOutline: typeof import('~icons/ic/outline-delete-outline')['default']
     IconIcOutlineKeyboardArrowRight: typeof import('~icons/ic/outline-keyboard-arrow-right')['default']
     IconIonFileTrayFullSharp: typeof import('~icons/ion/file-tray-full-sharp')['default']
     IconIonMdAppstore: typeof import('~icons/ion/md-appstore')['default']
@@ -46,5 +48,8 @@ declare module '@vue/runtime-core' {
     IconRiPassExpiredLine: typeof import('~icons/ri/pass-expired-line')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+  }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }
