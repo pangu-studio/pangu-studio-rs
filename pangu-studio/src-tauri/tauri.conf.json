@@ -64,6 +64,12 @@
       "active": true,
       "icon": [
         "icons/32x32.png",
+        "icons/32x32@2x.png",
+        "icons/48x48.png",
+        "icons/48x48@2x.png",
+        "icons/64x64.png",
+        "icons/72x72.png",
+        "icons/72x72@2x.png",
         "icons/128x128.png",
         "icons/128x128@2x.png",
         "icons/icon.icns",
