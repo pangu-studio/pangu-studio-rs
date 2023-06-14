@@ -24,7 +24,7 @@ impl Repository<DnsProvider, i64> for DnsProviderRepositoryImpl {
     async fn create(&self, provider: DnsProvider) -> Result<i64, Error> {
         let sql = format!(
             r#"
-        INSERT INTO {} (name, api_key, api_secret, provider_type) VALUES (?1,?2,?3,?4)
+        INSERT INTO {} (name, api_key, api_secret, provider_type, create_time) VALUES (?1, ?2, ?3, ?4, ?5)
         "#,
             DnsProvider::table_name()
         );
@@ -34,6 +34,7 @@ impl Repository<DnsProvider, i64> for DnsProviderRepositoryImpl {
             .bind(provider.api_key)
             .bind(provider.api_secret)
             .bind(provider.provider_type)
+            .bind(provider.create_time)
             .execute(self.db_pool)
             .await
             .or_else(|err| Err(Error::Database(err)))?

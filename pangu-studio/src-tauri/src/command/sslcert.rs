@@ -1,6 +1,5 @@
-use pangu_application::sslcert::SSLCertRequest;
+use pangu_application::sslcert::{DnsProviderCreateReq, SSLCertRequest};
 use pangu_domain::model::{DnsProvider, SSLCertificate};
-
 
 // remember to call `.manage(MyState::default())`
 #[tauri::command]
@@ -53,11 +52,23 @@ pub async fn get_sslcert_by_sn(
 #[tauri::command]
 pub async fn remove_sslcert(
     app_svc: tauri::State<'_, crate::ApplicationService>,
-id: i64,
+    id: i64,
 ) -> Result<(), String> {
     app_svc
         .sslcert_app_svc
         .remove_sslcert(id)
+        .await
+        .map_err(|err| err.to_string())
+}
+
+#[tauri::command]
+pub async fn add_dns_provider(
+    app_svc: tauri::State<'_, crate::ApplicationService>,
+    provider: DnsProviderCreateReq,
+) -> Result<i64, String> {
+    app_svc
+        .sslcert_app_svc
+        .add_dns_provider(provider)
         .await
         .map_err(|err| err.to_string())
 }

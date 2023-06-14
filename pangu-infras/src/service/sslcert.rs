@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use simplelog::info;
 
-use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest};
+use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest,DnsProviderCreateReq};
 use pangu_domain::errors::Error;
 use pangu_domain::model::{DnsProvider, SSLCertificate, SSLCertificateAddition};
 use pangu_domain::repository::{DnsProviderRepository, Repository, SSLCertificateRepository};
@@ -339,5 +339,10 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
 
     async fn remove_sslcert(&self, id: i64) -> Result<(), Error> {
         self.sslcert_repo.remove(id).await
+    }
+
+    async fn add_dns_provider(&self, req: DnsProviderCreateReq) -> Result<i64, Error> {
+        let provider = DnsProvider::new(&req.name, &req.api_key, &req.api_secret, req.provider_type);
+        self.dns_provider_repo.create(provider).await
     }
 }
