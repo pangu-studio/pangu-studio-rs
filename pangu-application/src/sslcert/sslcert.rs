@@ -35,4 +35,5 @@ pub trait SSLCertApplicationService {
     async fn list_sslcerts(&self) -> Result<Vec<SSLCertificate>, Error>;
     async fn get_sslcert_by_sn(&self, sn: &str) -> Result<SSLCertificate, Error>;
     async fn remove_sslcert(&self, id: i64) -> Result<(), Error>;
+    async fn remove_dns_provider(&self, id: i64) -> Result<(), Error>;
 }

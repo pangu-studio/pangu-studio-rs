@@ -77,7 +77,7 @@ impl Repository<DnsProvider, i64> for DnsProviderRepositoryImpl {
     async fn remove(&self, id: i64) -> Result<(), Error> {
         let sql = format!(
             r#"
-            UPDATE {} SET delete = ?1 WHERE id = ?2;
+            UPDATE {} SET deleted = ?1 WHERE id = ?2;
             "#,
             DnsProvider::table_name()
         );

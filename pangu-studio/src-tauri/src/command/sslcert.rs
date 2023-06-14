@@ -72,3 +72,15 @@ pub async fn add_dns_provider(
         .await
         .map_err(|err| err.to_string())
 }
+
+#[tauri::command]
+pub async fn remove_dns_provider(
+    app_svc: tauri::State<'_, crate::ApplicationService>,
+    id: i64,
+) -> Result<(), String> {
+    app_svc
+        .sslcert_app_svc
+        .remove_dns_provider(id)
+        .await
+        .map_err(|err| err.to_string())
+}

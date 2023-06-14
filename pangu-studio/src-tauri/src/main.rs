@@ -77,6 +77,7 @@ fn main() {
             command::sslcert::apply_certificate,
             command::sslcert::get_sslcert_by_sn,
             command::sslcert::remove_sslcert,
+            command::sslcert::remove_dns_provider,
             command::sslcert::add_dns_provider,
         ])
         .run(tauri::generate_context!())

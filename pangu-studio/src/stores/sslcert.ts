@@ -7,7 +7,8 @@ import {
   removeSslCert,
   CreateDnsProvider,
   addDnsProvider,
-} from './../api/sslcert'
+  removeDnsProvider,
+} from '@/api/sslcert'
 import { defineStore } from 'pinia'
 // import { da } from 'element-plus/es/locale';
 export const useSslCertStore = defineStore('sslcert', {
@@ -44,14 +45,16 @@ export const useSslCertStore = defineStore('sslcert', {
       this._applyCert = await getSslCertBySN(sn)
     },
     async removeSslCert(id: number) {
-      removeSslCert(id).then(() => {
-        this._sslcerts = this._sslcerts.filter((item) => item.id !== id)
-      })
+   let item =    removeSslCert(id)
+      this._sslcerts = this._sslcerts.filter((item) => item.id !== id)
     },
     async addDnsProvider(provider: CreateDnsProvider) {
-      addDnsProvider(provider).then((item) => {
-        console.log('add dns provider success id:', item)
-      })
+      let item = await addDnsProvider(provider)
+      console.log('add dns provider success id:', item)
+    },
+    async removeDnsProvider(id: number) {
+      await removeDnsProvider(id)
+      console.log('remove dns provider success')
     },
   },
 })

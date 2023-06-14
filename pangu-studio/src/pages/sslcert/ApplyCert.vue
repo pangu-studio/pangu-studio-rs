@@ -52,7 +52,6 @@
         </div>
         <div :class="stepActive !== 3 ? 'hidden-form' : ''">
             <div class="tip">证书已签发，请前去列表查看</div>
-
             <el-table v-if="stepActive === 3" :data="store.applyCertArray" style="width: 100%">
                 <el-table-column label="域名" width="230">
                     <template #default="scope">
@@ -100,16 +99,13 @@ import { FormRules, FormInstance } from 'element-plus'
 import { SSLCertificateCreate, applyCertificate } from '@/api/sslcert'
 import { useRouter } from "vue-router";
 import useClipboard from 'vue-clipboard3'
-
 import dateUtil from "@/utils/date"
+
 const router = useRouter()
 var store = useSslCertStore()
-
 const { toClipboard } = useClipboard()
-
 const copyMessage = "复制成功"
 const doCopy = async (txt: string) => {
-
     try {
         await toClipboard(txt).then(() => {
             ElMessage({
@@ -138,8 +134,6 @@ interface Addition {
 }
 
 const fullscreenLoading = ref(false)
-
-
 let addition = ref([] as Addition[])
 
 // computed for date format
@@ -151,7 +145,7 @@ const datetimeFormat = computed(() => {
 
 const handle_crt = computed(() => {
     return (key_crt: string) => {
-        return key_crt.substring(0, 3) + "********" + key_crt.substr(key_crt.length - 3, key_crt.length)
+        return key_crt.substring(0, 3) + "********" + key_crt.substring(key_crt.length - 3, key_crt.length)
     }
 })
 const rules = reactive<FormRules>({
@@ -239,8 +233,6 @@ onMounted(() => {
 
 </script>
 <style lang="scss" scoped>
-// @use "element-plus/theme-chalk/src/dark/css-vars.scss" as *;
-
 .operate-btn-group {
     display: flex;
     justify-content: flex-start;

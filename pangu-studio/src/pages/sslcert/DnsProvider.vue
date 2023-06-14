@@ -28,7 +28,8 @@
 
     </el-dialog>
     <el-row style="margin-top: 16px;">
-        <el-col v-for="provider in store.list" :key="provider.id" :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
+        <el-col class="provider-card-container" v-for="provider in store.list" :key="provider.id" :xs="8" :sm="8" :md="6"
+            :lg="6" :xl="4">
             <el-card class="provider-card" :body-style="{ padding: '0px' }">
                 <img :src="DnspodLogo" class="image" />
                 <div style="padding: 14px;padding-top: 0;">
@@ -41,7 +42,7 @@
 
                     <div class="bottom">
                         <time class="time">{{ datetimeFormat(provider.create_time) }}</time>
-                        <el-button text class="button">设置</el-button>
+                        <el-button text class="button" @click="handleRemoveDnsProvider(provider.id)">删除</el-button>
                     </div>
                 </div>
             </el-card>
@@ -54,6 +55,7 @@ import { useSslCertStore } from "@/stores/sslcert";
 import DnspodLogo from "@/assets/img/dnspod.png";
 import moment from "moment";
 import { CreateDnsProvider } from "@/api/sslcert";
+import { ElMessage } from "element-plus";
 
 const store = useSslCertStore();
 const showDialog = ref(false);
@@ -76,21 +78,36 @@ const handleSecret = computed(() => {
     }
 })
 
-const handleSaveDnsProvider = () => {
-    store.addDnsProvider(providerForm.value).then(() => {
-        showDialog.value = false;
+async function handleRemoveDnsProvider(id: number) {
+    store.removeDnsProvider(id).then(() => {
+        console.log("remove success");
+        store.listDnsProvider().then(() => {
+            console.log("refresh success");
+        })
     })
 }
-onMounted(() => {
+
+const handleSaveDnsProvider = async () => {
+    await store.addDnsProvider(providerForm.value)
+    ElMessage.info("添加成功");
+    showDialog.value = false;
+    await store.listDnsProvider()
+    console.log("refresh success");
+}
+onMounted(async () => {
     console.log("sslcert");
-    store.listDnsProvider().then(() => {
-        console.log(store.list);
-    })
+    await store.listDnsProvider()
+    console.log(store.list);
 });
 </script>
 <style lang="scss" scoped>
 .provider-card {
     font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+.provider-card-container:not(:first-child) {
+    margin-left: 10px;
 }
 
 .time {

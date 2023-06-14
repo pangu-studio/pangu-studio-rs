@@ -1,13 +1,12 @@
 use async_trait::async_trait;
 use simplelog::info;
 
-use pangu_application::sslcert::{SSLCertApplicationService, SSLCertRequest,DnsProviderCreateReq};
+use pangu_application::sslcert::{DnsProviderCreateReq, SSLCertApplicationService, SSLCertRequest};
 use pangu_domain::errors::Error;
 use pangu_domain::model::{DnsProvider, SSLCertificate, SSLCertificateAddition};
-use pangu_domain::repository::{DnsProviderRepository, Repository, SSLCertificateRepository};
+use pangu_domain::repository::{DnsProviderRepository, SSLCertificateRepository};
 use pangu_domain::service::sslcert::{DnsProviderService, ResponseData};
 use rcgen::{Certificate, CertificateParams, DistinguishedName};
-
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -55,9 +54,6 @@ impl DnsProviderService for DnspodServiceImpl {
 
         println!("Response status {:#?}", json);
         Ok(json)
-        // response
-
-        // println!("a");
     }
 
     async fn remove_record(
@@ -342,7 +338,11 @@ impl SSLCertApplicationService for SSLCertApplicationServiceImpl {
     }
 
     async fn add_dns_provider(&self, req: DnsProviderCreateReq) -> Result<i64, Error> {
-        let provider = DnsProvider::new(&req.name, &req.api_key, &req.api_secret, req.provider_type);
+        let provider =
+            DnsProvider::new(&req.name, &req.api_key, &req.api_secret, req.provider_type);
         self.dns_provider_repo.create(provider).await
+    }
+    async fn remove_dns_provider(&self, id: i64) -> Result<(), Error> {
+        self.dns_provider_repo.remove(id).await
     }
 }

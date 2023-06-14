@@ -59,3 +59,6 @@ export async function addDnsProvider(
 ): Promise<DnsProvider> {
   return invoke('add_dns_provider', { provider })
 }
+export async function removeDnsProvider(id: number): Promise<DnsProvider> {
+  return invoke('remove_dns_provider', { id })
+}
