@@ -60,7 +60,6 @@
       }
     },
     "bundle": {
-      "targets": ["deb","dmg"],
       "active": true,
       "icon": [
         "icons/32x32.png",
@@ -76,7 +75,7 @@
         "icons/icon.ico"
       ],
       "identifier": "studio.pangu.desktop",
-      "targets": "all"
+      "targets": ["deb", "dmg", "app"]
     },
     "security": {
       "csp": null
