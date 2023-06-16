@@ -8,8 +8,8 @@ use sqlx::FromRow;
 
 #[derive(sqlx::Type)]
 #[sqlx(rename_all = "lowercase")]
-#[serde(rename_all = "snake_case")]
 #[derive(Debug, Clone, Serialize, Deserialize, Display)]
+#[serde(rename_all = "snake_case")]
 pub enum DnsProviderType {
     Dnspod,
 }
